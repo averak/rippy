@@ -13,3 +13,6 @@ exception:
     validation_error: "Validation error has occurred."
   unauthorized:
     user_not_logged_in: "User has no logged in."
+    wrong_password: "Password is wrong."
+    invalid_access_token: "Access token is invalid."
+    expired_access_token: "Access token is expired."
