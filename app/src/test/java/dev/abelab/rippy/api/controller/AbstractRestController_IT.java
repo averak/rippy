@@ -11,7 +11,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -30,7 +29,6 @@ import dev.abelab.rippy.annotation.IntegrationTest;
 import dev.abelab.rippy.db.entity.User;
 import dev.abelab.rippy.db.entity.UserSample;
 import dev.abelab.rippy.enums.UserRoleEnum;
-import dev.abelab.rippy.api.request.LoginRequest;
 import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.logic.UserLogic;
 import dev.abelab.rippy.util.ConvertUtil;
@@ -247,17 +245,7 @@ public abstract class AbstractRestController_IT {
 	 * @return JWT
 	 */
 	public String getLoginUserJwt(User user) throws Exception {
-		// login request body
-		final var requestBody = LoginRequest.builder() //
-			.email(LOGIN_USER_EMAIL) //
-			.password(LOGIN_USER_PASSWORD) //
-			.build();
-
-		// login
-		final var request = postRequest("/api/login", requestBody);
-		final var result = mockMvc.perform(request).andReturn();
-
-		return result.getResponse().getHeader(HttpHeaders.AUTHORIZATION);
+		return this.userLogic.generateJwt(user);
 	}
 
 	@BeforeEach
