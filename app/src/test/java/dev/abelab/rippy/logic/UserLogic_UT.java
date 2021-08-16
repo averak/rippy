@@ -76,7 +76,7 @@ public class UserLogic_UT extends AbstractLogic_UT {
             return Stream.of(
                 // 管理者
                 arguments(UserRoleEnum.ADMIN, null),
-                // 一般
+                // メンバー
                 arguments(UserRoleEnum.MEMBER, new ForbiddenException(ErrorCode.USER_HAS_NO_PERMISSION)));
         }
 

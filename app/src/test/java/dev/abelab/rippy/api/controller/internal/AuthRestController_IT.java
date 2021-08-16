@@ -64,7 +64,7 @@ public class AuthRestController_IT extends AbstractRestController_IT {
 			return Stream.of(
 				// 管理者
 				arguments(UserRoleEnum.ADMIN),
-				// 一般ユーザ
+                // メンバー
 				arguments(UserRoleEnum.MEMBER));
 		}
 
