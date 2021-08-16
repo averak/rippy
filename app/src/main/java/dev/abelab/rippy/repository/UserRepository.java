@@ -1,6 +1,7 @@
 package dev.abelab.rippy.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
@@ -41,6 +42,18 @@ public class UserRepository {
             throw new ConflictException(ErrorCode.CONFLICT_EMAIL);
         }
         return this.userMapper.insertSelective(user);
+    }
+
+    /**
+     * IDからユーザを検索
+     *
+     * @param userId ユーザID
+     *
+     * @return ユーザ
+     */
+    public User selectById(final int userId) {
+        return Optional.ofNullable(this.userMapper.selectByPrimaryKey(userId)) //
+            .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND_USER));
     }
 
     /**

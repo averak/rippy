@@ -26,6 +26,11 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
 import dev.abelab.rippy.annotation.IntegrationTest;
+import dev.abelab.rippy.db.entity.User;
+import dev.abelab.rippy.db.entity.UserSample;
+import dev.abelab.rippy.enums.UserRoleEnum;
+import dev.abelab.rippy.repository.UserRepository;
+import dev.abelab.rippy.logic.UserLogic;
 import dev.abelab.rippy.util.ConvertUtil;
 import dev.abelab.rippy.exception.BaseException;
 import dev.abelab.rippy.api.response.ErrorResponse;
@@ -45,22 +50,19 @@ public abstract class AbstractRestController_IT {
 	protected static final String LOGIN_USER_PASSWORD = "f4BabxEr7xA6";
 	protected static final Integer LOGIN_USER_ADMISSION_AT = SAMPLE_INT;
 
-	/**
-	 * The Mock MVC
-	 */
 	MockMvc mockMvc;
 
-	/**
-	 * The Web Application Context.
-	 */
 	@Autowired
 	WebApplicationContext webApplicationContext;
 
-	/**
-	 * Transaction Manager
-	 */
 	@Autowired
 	private PlatformTransactionManager transactionManager;
+
+	@Autowired
+	private UserRepository userRepository;
+
+	@Autowired
+	private UserLogic userLogic;
 
 	/**
 	 * GET request
@@ -214,6 +216,36 @@ public abstract class AbstractRestController_IT {
 		}
 
 		return response;
+	}
+
+	/**
+	 * ログインユーザを作成
+	 *
+	 * @param userRole ユーザロール
+	 *
+	 * @return loginUser
+	 */
+	public User createLoginUser(UserRoleEnum userRole) {
+		final var loginUser = UserSample.builder() //
+			.roleId(userRole.getId()) //
+			.email(LOGIN_USER_EMAIL) //
+			.password(this.userLogic.encodePassword(LOGIN_USER_PASSWORD)) //
+			.admissionYear(LOGIN_USER_ADMISSION_AT) //
+			.build();
+		this.userRepository.insert(loginUser);
+
+		return loginUser;
+	}
+
+	/**
+	 * ユーザのJWTを取得
+	 *
+	 * @param user ユーザ
+	 *
+	 * @return JWT
+	 */
+	public String getLoginUserJwt(User user) throws Exception {
+		return this.userLogic.generateJwt(user);
 	}
 
 	@BeforeEach
