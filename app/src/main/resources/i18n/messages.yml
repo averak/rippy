@@ -1,0 +1,15 @@
+exception:
+  internal_server_error:
+    unexpected_error: "Unexpected error has occurred."
+    failed_to_send_slack: "Failed to send slack."
+  not_found:
+    api: "API does not exists."
+    user: "User does not exists."
+  conflict:
+    email: "Email already exists."
+  forbidden:
+    user_has_no_permission: "User has no permission."
+  bad_request:
+    validation_error: "Validation error has occurred."
+  unauthorized:
+    user_not_logged_in: "User has no logged in."
