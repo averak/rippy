@@ -27,5 +27,4 @@ jobs:
           TZ: "Asia/Tokyo"
         run: |
           docker-compose up -d
-          ./gradlew -Dspring.profiles.active=test flywayMigrate
-          ./gradlew -Dspring.profiles.active=test test
+          ./gradlew test
