@@ -5,12 +5,15 @@ exception:
   not_found:
     api: "API does not exists."
     user: "User does not exists."
+    user_role: "User role does not exists."
   conflict:
     email: "Email already exists."
   forbidden:
     user_has_no_permission: "User has no permission."
   bad_request:
     validation_error: "Validation error has occurred."
+    invalid_password_size: "Password size is invalid."
+    too_simple_password: "Password is too simple."
   unauthorized:
     user_not_logged_in: "User has no logged in."
     wrong_password: "Password is wrong."

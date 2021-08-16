@@ -23,6 +23,8 @@ public enum ErrorCode {
 
     NOT_FOUND_USER(1101, "exception.not_found.user"),
 
+    NOT_FOUND_USER_ROLE(1102, "exception.not_found.user_role"),
+
     /**
      * Conflict: 1200~1299
      */
@@ -37,6 +39,10 @@ public enum ErrorCode {
      * Bad Request: 1400~1499
      */
     VALIDATION_ERROR(1400, "exception.bad_request.validation_error"),
+
+    INVALID_PASSWORD_SIZE(1401, "exception.bad_request.invalid_password_size"),
+
+    TOO_SIMPLE_PASSWORD(1402, "exception.bad_request.too_simple_password"),
 
     /**
      * Unauthorized: 1500~1599
