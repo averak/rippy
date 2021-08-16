@@ -21,6 +21,7 @@ import dev.abelab.rippy.api.request.LoginRequest;
 import dev.abelab.rippy.enums.UserRoleEnum;
 import dev.abelab.rippy.exception.ErrorCode;
 import dev.abelab.rippy.exception.NotFoundException;
+import dev.abelab.rippy.exception.UnauthorizedException;
 
 /**
  * AuthRestController Integration Test
@@ -96,7 +97,7 @@ public class AuthRestController_IT extends AbstractRestController_IT {
 
 			// test
 			final var request = postRequest("/api/login", requestBody);
-			execute(request, new NotFoundException(ErrorCode.WRONG_PASSWORD));
+			execute(request, new UnauthorizedException(ErrorCode.WRONG_PASSWORD));
 		}
 
 	}
