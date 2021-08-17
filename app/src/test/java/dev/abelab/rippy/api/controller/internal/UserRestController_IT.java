@@ -26,6 +26,7 @@ import dev.abelab.rippy.db.entity.UserSample;
 import dev.abelab.rippy.enums.UserRoleEnum;
 import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.api.request.UserCreateRequest;
+import dev.abelab.rippy.api.request.UserUpdateRequest;
 import dev.abelab.rippy.api.response.UserResponse;
 import dev.abelab.rippy.api.response.UsersResponse;
 import dev.abelab.rippy.exception.ErrorCode;
@@ -45,6 +46,7 @@ public class UserRestController_IT extends AbstractRestController_IT {
 	static final String BASE_PATH = "/api/users";
 	static final String GET_USERS_PATH = BASE_PATH;
 	static final String CREATE_USER_PATH = BASE_PATH;
+	static final String UPDATE_USER_PATH = BASE_PATH + "/%d";
 
 	@Autowired
 	ModelMapper modelMapper;
@@ -249,6 +251,113 @@ public class UserRestController_IT extends AbstractRestController_IT {
 			final var request = postRequest(CREATE_USER_PATH, requestBody);
 			request.header(HttpHeaders.AUTHORIZATION, "");
 			execute(request, new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN));
+		}
+
+	}
+
+	/**
+	 * ユーザ更新APIのテスト
+	 */
+	@Nested
+	@TestInstance(PER_CLASS)
+	class UpdateUserTest extends AbstractRestControllerInitialization_IT {
+
+		@Test
+		void 正_管理者がユーザを更新() throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.ADMIN);
+			final var jwt = getLoginUserJwt(loginUser);
+
+			final var user = UserSample.builder().roleId(UserRoleEnum.ADMIN.getId()).password(LOGIN_USER_PASSWORD).build();
+			userRepository.insert(user);
+
+			user.setEmail(user.getEmail() + "xxx");
+			user.setFirstName(user.getFirstName() + "xxx");
+			user.setLastName(user.getLastName() + "xxx");
+			user.setAdmissionYear(user.getAdmissionYear() + 1);
+			user.setRoleId(UserRoleEnum.MEMBER.getId());
+			final var requestBody = modelMapper.map(user, UserUpdateRequest.class);
+
+			// test
+			final var request = putRequest(String.format(UPDATE_USER_PATH, user.getId()), requestBody);
+			request.header(HttpHeaders.AUTHORIZATION, jwt);
+			execute(request, HttpStatus.OK);
+
+			// verify
+			final var updatedUser = userRepository.selectByEmail(user.getEmail());
+			assertThat(updatedUser) //
+				.extracting(User::getEmail, User::getFirstName, User::getLastName, User::getAdmissionYear, User::getRoleId) //
+				.containsExactly( //
+					user.getFirstName(), user.getLastName(), user.getEmail(), user.getRoleId(), user.getAdmissionYear());
+		}
+
+		@Test
+		void 異_管理者以外はユーザを更新不可() throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.MEMBER);
+			final var jwt = getLoginUserJwt(loginUser);
+
+			final var user = UserSample.builder().roleId(UserRoleEnum.ADMIN.getId()).password(LOGIN_USER_PASSWORD).build();
+			userRepository.insert(user);
+
+			user.setEmail(user.getEmail() + "xxx");
+			user.setFirstName(user.getFirstName() + "xxx");
+			user.setLastName(user.getLastName() + "xxx");
+			user.setAdmissionYear(user.getAdmissionYear() + 1);
+			user.setRoleId(UserRoleEnum.MEMBER.getId());
+			final var requestBody = modelMapper.map(user, UserUpdateRequest.class);
+
+			// test
+			final var request = putRequest(String.format(UPDATE_USER_PATH, user.getId()), requestBody);
+			request.header(HttpHeaders.AUTHORIZATION, jwt);
+			execute(request, new ForbiddenException(ErrorCode.USER_HAS_NO_PERMISSION));
+		}
+
+		@ParameterizedTest
+		@MethodSource
+		void 正_ユーザロールを更新(final UserRoleEnum beforeUserRole, final UserRoleEnum afterUserRole) throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.ADMIN);
+			final var jwt = getLoginUserJwt(loginUser);
+
+			final var user = UserSample.builder().roleId(beforeUserRole.getId()).password(LOGIN_USER_PASSWORD).build();
+			userRepository.insert(user);
+
+			user.setRoleId(afterUserRole.getId());
+			final var requestBody = modelMapper.map(user, UserUpdateRequest.class);
+
+			// test
+			final var request = putRequest(String.format(UPDATE_USER_PATH, user.getId()), requestBody);
+			request.header(HttpHeaders.AUTHORIZATION, jwt);
+			execute(request, HttpStatus.OK);
+
+			// verify
+			final var updatedUser = userRepository.selectByEmail(user.getEmail());
+			assertThat(updatedUser.getRoleId()).isEqualTo(afterUserRole.getId());
+		}
+
+		Stream<Arguments> 正_ユーザロールを更新() {
+			return Stream.of( //
+				// 管理者 -> 一般
+				arguments(UserRoleEnum.ADMIN, UserRoleEnum.MEMBER), //
+				// 一般 -> 管理者
+				arguments(UserRoleEnum.MEMBER, UserRoleEnum.ADMIN) //
+			);
+		}
+
+		@Test
+		void 異_更新対象ユーザが存在しない() throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.ADMIN);
+			final var jwt = getLoginUserJwt(loginUser);
+
+			final var user = UserSample.builder().password(LOGIN_USER_PASSWORD).build();
+			final var requestBody = modelMapper.map(user, UserUpdateRequest.class);
+
+			// test
+			final var request = putRequest(String.format(UPDATE_USER_PATH, SAMPLE_INT), requestBody);
+			request.header(HttpHeaders.AUTHORIZATION, jwt);
+			execute(request, new NotFoundException(ErrorCode.NOT_FOUND_USER));
 		}
 
 	}
