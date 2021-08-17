@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 import io.swagger.annotations.*;
 import lombok.*;
 import dev.abelab.rippy.api.request.UserCreateRequest;
+import dev.abelab.rippy.api.request.UserUpdateRequest;
 import dev.abelab.rippy.api.response.UsersResponse;
 import dev.abelab.rippy.service.UserService;
 
@@ -60,7 +61,7 @@ public class UserRestController {
     @ApiResponses( //
         value = { //
                 @ApiResponse(code = 201, message = "作成成功"), //
-                @ApiResponse(code = 401, message = "無効なパスワード"), //
+                @ApiResponse(code = 400, message = "無効なパスワード"), //
                 @ApiResponse(code = 401, message = "ユーザがログインしていない"), //
                 @ApiResponse(code = 403, message = "ユーザに権限がない"), //
                 @ApiResponse(code = 409, message = "ユーザが既に存在している"), //
@@ -74,4 +75,36 @@ public class UserRestController {
     ) {
         this.userService.createUser(requestBody, jwt);
     }
+
+    /**
+     * ユーザ更新API
+     *
+     * @param jwt         JWT
+     *
+     * @param userId      ユーザID
+     *
+     * @param requestBody ユーザ更新リクエスト
+     */
+    @ApiOperation( //
+        value = "ユーザの更新", //
+        notes = "ユーザを更新する。" //
+    )
+    @ApiResponses( //
+        value = { //
+                @ApiResponse(code = 200, message = "更新成功"), //
+                @ApiResponse(code = 401, message = "ユーザがログインしていない"), //
+                @ApiResponse(code = 403, message = "ユーザに権限がない"), //
+                @ApiResponse(code = 404, message = "ユーザが存在しない"), //
+        } //
+    )
+    @PutMapping(value = "/{user_id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void updateUser( //
+        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = true) final String jwt, //
+        @ApiParam(name = "user_id", required = true, value = "ユーザID") @PathVariable("user_id") final int userId, //
+        @Validated @ApiParam(name = "body", required = true, value = "ユーザ更新情報") @RequestBody final UserUpdateRequest requestBody //
+    ) {
+        this.userService.updateUser(userId, requestBody, jwt);
+    }
+
 }

@@ -45,6 +45,16 @@ public class UserRepository {
     }
 
     /**
+     * ユーザを更新
+     *
+     * @param user ユーザ
+     */
+    public void update(final User user) {
+        user.setUpdatedAt(null);
+        this.userMapper.updateByPrimaryKeySelective(user);
+    }
+
+    /**
      * IDからユーザを検索
      *
      * @param userId ユーザID
