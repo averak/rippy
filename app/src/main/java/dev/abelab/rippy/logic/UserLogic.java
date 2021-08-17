@@ -55,7 +55,7 @@ public class UserLogic {
             .setClaims(claims) //
             .setIssuer(this.jwtProperty.getIssuer()) //
             .setIssuedAt(new Date()) //
-            .setExpiration(new Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000)) // 1 week
+            .setExpiration(new Date(System.currentTimeMillis() + this.jwtProperty.getValidHour() * 60 * 60 * 1000))
             .signWith(SignatureAlgorithm.HS512, this.jwtProperty.getSecret().getBytes()) //
             .compact();
     }

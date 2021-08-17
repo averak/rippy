@@ -53,6 +53,7 @@ mybatis:
 jwt:
   secret: zdtlD3JK56m6wTTgsNFhqzjq
   issuer: rippy.abelab.dev
+  valid_hour: 168
 
 logging:
   level:

@@ -20,4 +20,9 @@ public class JwtProperty {
      */
     String issuer;
 
+    /**
+     * 有効時間
+     */
+    Integer validHour;
+
 }

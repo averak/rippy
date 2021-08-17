@@ -100,6 +100,10 @@ public class UserLogic_UT extends AbstractLogic_UT {
                     jwtProperty.getSecret();
                     result = SAMPLE_STR;
                 }
+                {
+                    jwtProperty.getValidHour();
+                    result = 24 * 7;
+                }
             };
 
             // setup
@@ -136,6 +140,10 @@ public class UserLogic_UT extends AbstractLogic_UT {
                 {
                     jwtProperty.getSecret();
                     result = SAMPLE_STR;
+                }
+                {
+                    jwtProperty.getValidHour();
+                    result = 24 * 7;
                 }
             };
 
