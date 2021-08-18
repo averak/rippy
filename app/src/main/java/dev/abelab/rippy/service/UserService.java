@@ -52,7 +52,7 @@ public class UserService {
     /**
      * ユーザを作成
      *
-     * @param loginUser         ログインユーザ
+     * @param loginUser   ログインユーザ
      *
      * @param requestBody ユーザ作成リクエスト
      */
@@ -76,7 +76,7 @@ public class UserService {
     /**
      * ユーザを更新
      *
-     * @param loginUser         ログインユーザ
+     * @param loginUser   ログインユーザ
      *
      * @param userId      ユーザID
      *
@@ -100,9 +100,9 @@ public class UserService {
     /**
      * ユーザを削除
      *
-     * @param loginUser    ログインユーザ
+     * @param loginUser ログインユーザ
      *
-     * @param userId ユーザID
+     * @param userId    ユーザID
      */
     @Transactional
     public void deleteUser(final int userId, final User loginUser) {
@@ -111,6 +111,18 @@ public class UserService {
 
         // ユーザを削除
         this.userRepository.deleteById(userId);
+    }
+
+    /**
+     * ログインユーザ詳細を取得
+     *
+     * @param loginUser ログインユーザ
+     *
+     * @return ユーザ詳細レスポンス
+     */
+    @Transactional
+    public UserResponse getLoginUser(final User loginUser) {
+        return this.modelMapper.map(loginUser, UserResponse.class);
     }
 
 }
