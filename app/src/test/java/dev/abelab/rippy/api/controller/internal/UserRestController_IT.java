@@ -109,7 +109,7 @@ public class UserRestController_IT extends AbstractRestController_IT {
 		}
 
 		@Test
-		void 異_無効なトークン() throws Exception {
+		void 異_無効な認証ヘッダ() throws Exception {
 			// test
 			final var request = getRequest(GET_USERS_PATH);
 			request.header(HttpHeaders.AUTHORIZATION, "");
@@ -243,7 +243,7 @@ public class UserRestController_IT extends AbstractRestController_IT {
 		}
 
 		@Test
-		void 異_無効なトークン() throws Exception {
+		void 異_無効な認証ヘッダ() throws Exception {
 			// setup
 			final var user = UserSample.builder().build();
 			final var requestBody = modelMapper.map(user, UserCreateRequest.class);
@@ -362,7 +362,7 @@ public class UserRestController_IT extends AbstractRestController_IT {
 		}
 
 		@Test
-		void 異_無効なトークン() throws Exception {
+		void 異_無効な認証ヘッダ() throws Exception {
 			// setup
 			final var user = UserSample.builder().password(LOGIN_USER_PASSWORD).build();
 			final var requestBody = modelMapper.map(user, UserUpdateRequest.class);
@@ -426,7 +426,7 @@ public class UserRestController_IT extends AbstractRestController_IT {
 		}
 
 		@Test
-		void 異_無効なトークン() throws Exception {
+		void 異_無効な認証ヘッダ() throws Exception {
 			// test
 			final var request = deleteRequest(String.format(DELETE_USER_PATH, SAMPLE_INT));
 			request.header(HttpHeaders.AUTHORIZATION, "");
