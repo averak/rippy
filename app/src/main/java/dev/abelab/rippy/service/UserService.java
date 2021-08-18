@@ -31,15 +31,12 @@ public class UserService {
     /**
      * ユーザ一覧を取得
      *
-     * @param token Bearerトークン
+     * @param loginUser ログインユーザ
      *
      * @return ユーザ一覧レスポンス
      */
     @Transactional
-    public UsersResponse getUsers(final String token) {
-        // ログインユーザの取得
-        final var loginUser = this.userLogic.getLoginUser(token);
-
+    public UsersResponse getUsers(final User loginUser) {
         // 管理者かチェック
         this.userLogic.checkAdmin(loginUser.getId());
 
@@ -55,15 +52,12 @@ public class UserService {
     /**
      * ユーザを作成
      *
-     * @param token       Bearerトークン
+     * @param loginUser         ログインユーザ
      *
      * @param requestBody ユーザ作成リクエスト
      */
     @Transactional
-    public void createUser(final UserCreateRequest requestBody, final String token) {
-        // ログインユーザの取得
-        final var loginUser = this.userLogic.getLoginUser(token);
-
+    public void createUser(final UserCreateRequest requestBody, final User loginUser) {
         // 管理者かチェック
         this.userLogic.checkAdmin(loginUser.getId());
 
@@ -82,17 +76,14 @@ public class UserService {
     /**
      * ユーザを更新
      *
-     * @param token       Bearerトークン
+     * @param loginUser         ログインユーザ
      *
      * @param userId      ユーザID
      *
      * @param requestBody ユーザ更新リクエスト
      */
     @Transactional
-    public void updateUser(final int userId, final UserUpdateRequest requestBody, final String token) {
-        // ログインユーザを取得
-        final var loginUser = this.userLogic.getLoginUser(token);
-
+    public void updateUser(final int userId, final UserUpdateRequest requestBody, final User loginUser) {
         // 管理者かチェック
         this.userLogic.checkAdmin(loginUser.getId());
 
@@ -109,15 +100,12 @@ public class UserService {
     /**
      * ユーザを削除
      *
-     * @param token  Bearerトークン
+     * @param loginUser    ログインユーザ
      *
      * @param userId ユーザID
      */
     @Transactional
-    public void deleteUser(final int userId, final String token) {
-        // ログインユーザを取得
-        final var loginUser = this.userLogic.getLoginUser(token);
-
+    public void deleteUser(final int userId, final User loginUser) {
         // 管理者かチェック
         this.userLogic.checkAdmin(loginUser.getId());
 

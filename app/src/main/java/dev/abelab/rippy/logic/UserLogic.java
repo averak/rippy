@@ -63,17 +63,11 @@ public class UserLogic {
     /**
      * ログインユーザを取得
      *
-     * @param token Bearerトークン
+     * @param jwt JWT
      *
      * @return ユーザ
      */
-    public User getLoginUser(final String token) {
-        // 不正な構文
-        if (!token.startsWith("Bearer ")) {
-            throw new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN);
-        }
-        final var jwt = token.substring(7);
-
+    public User getLoginUser(final String jwt) {
         // JWTの有効性を検証
         try {
             final var claim = Jwts.parser().setSigningKey(this.jwtProperty.getSecret().getBytes()).parseClaimsJws(jwt).getBody();
