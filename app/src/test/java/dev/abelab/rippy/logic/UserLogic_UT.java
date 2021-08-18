@@ -124,7 +124,7 @@ public class UserLogic_UT extends AbstractLogic_UT {
     public class GetLoginUserTest {
 
         @Test
-        void 正_有効なJWTからログインユーザを取得() {
+        void 正_有効なトークンからログインユーザを取得() {
             // setup
             final var user = UserSample.builder().roleId(UserRoleEnum.ADMIN.getId()).build();
 
@@ -148,14 +148,13 @@ public class UserLogic_UT extends AbstractLogic_UT {
             };
 
             // verify
-            final var jwt = userLogic.generateJwt(user);
-            final var loginUser = userLogic.getLoginUser(jwt);
+            final var token = "Bearer " + userLogic.generateJwt(user);
+            final var loginUser = userLogic.getLoginUser(token);
             assertThat(loginUser.getId()).isEqualTo(user.getId());
         }
 
-        @ParameterizedTest
-        @MethodSource
-        void 異_無効なJWT(final String jwt, final BaseException exception) {
+        @Test
+        void 異_期限切れのトークン() {
             new Expectations() {
                 {
                     jwtProperty.getSecret();
@@ -164,19 +163,17 @@ public class UserLogic_UT extends AbstractLogic_UT {
             };
 
             // verify
-            final var occurredException = assertThrows(exception.getClass(), () -> userLogic.getLoginUser(jwt));
-            assertThat(occurredException.getErrorCode()).isEqualTo(exception.getErrorCode());
-
+            final var token =
+                "Bearer eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJTQU1QTEUiLCJpZCI6MSwiaWF0IjoxNjI1OTEyMjUxLCJleHAiOjE2MjU5MTIyNTF9.sg0Nf3hQ7d7NpfO569v9zrwF1mvgIq9bewULiZ7H0UF2--UgqPa98XFiF6kpvNLlnv7om6KpmRB6HOzeImfD2w";
+            final var occurredException = assertThrows(UnauthorizedException.class, () -> userLogic.getLoginUser(token));
+            assertThat(occurredException.getErrorCode()).isEqualTo(ErrorCode.EXPIRED_ACCESS_TOKEN);
         }
 
-        Stream<Arguments> 異_無効なJWT() {
-            return Stream.of(
-                // 無効
-                arguments(SAMPLE_STR, new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN)),
-                // 期限切れ
-                arguments(
-                    "eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJTQU1QTEUiLCJpZCI6MSwiaWF0IjoxNjI1OTEyMjUxLCJleHAiOjE2MjU5MTIyNTF9.sg0Nf3hQ7d7NpfO569v9zrwF1mvgIq9bewULiZ7H0UF2--UgqPa98XFiF6kpvNLlnv7om6KpmRB6HOzeImfD2w",
-                    new UnauthorizedException(ErrorCode.EXPIRED_ACCESS_TOKEN)));
+        @Test
+        void 異_不正な構文() {
+            // verify
+            final var occurredException = assertThrows(UnauthorizedException.class, () -> userLogic.getLoginUser(SAMPLE_STR));
+            assertThat(occurredException.getErrorCode()).isEqualTo(ErrorCode.INVALID_ACCESS_TOKEN);
         }
 
     }

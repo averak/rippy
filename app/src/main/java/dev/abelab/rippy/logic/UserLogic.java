@@ -63,14 +63,27 @@ public class UserLogic {
     /**
      * ログインユーザを取得
      *
-     * @param jwt JWT
+     * @param token Bearerトークン
      *
      * @return ユーザ
      */
-    public User getLoginUser(final String jwt) {
+    public User getLoginUser(final String token) {
+        // 不正な構文
+        if (!token.startsWith("Bearer ")) {
+            throw new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN);
+        }
+        final var jwt = token.substring(7);
+
         // JWTの有効性を検証
         try {
-            Jwts.parser().setSigningKey(this.jwtProperty.getSecret().getBytes()).parseClaimsJws(jwt).getBody();
+            final var claim = Jwts.parser().setSigningKey(this.jwtProperty.getSecret().getBytes()).parseClaimsJws(jwt).getBody();
+            final var userId = claim.get("id");
+
+            if (userId == null) {
+                throw new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN);
+            }
+
+            return this.userRepository.selectById((int) userId);
         } catch (SignatureException e) {
             throw new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN);
         } catch (MalformedJwtException e) {
@@ -82,16 +95,6 @@ public class UserLogic {
         } catch (ExpiredJwtException e) {
             throw new UnauthorizedException(ErrorCode.EXPIRED_ACCESS_TOKEN);
         }
-
-        final var claim = Jwts.parser().setSigningKey(this.jwtProperty.getSecret().getBytes()).parseClaimsJws(jwt).getBody();
-        final var userId = claim.get("id");
-
-        // 無効なJWT
-        if (userId == null) {
-            throw new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN);
-        }
-
-        return this.userRepository.selectById((int) userId);
     }
 
     /**

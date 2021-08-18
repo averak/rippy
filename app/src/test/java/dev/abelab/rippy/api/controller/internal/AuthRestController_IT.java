@@ -57,6 +57,7 @@ public class AuthRestController_IT extends AbstractRestController_IT {
 
 			// verify
 			assertThat(response.getResponse().getHeader(HttpHeaders.AUTHORIZATION)).isNotNull();
+			assertThat(response.getResponse().getHeader(HttpHeaders.AUTHORIZATION)).matches("Bearer .+");
 		}
 
 		Stream<Arguments> 正_ユーザがログイン() {
@@ -64,7 +65,7 @@ public class AuthRestController_IT extends AbstractRestController_IT {
 			return Stream.of(
 				// 管理者
 				arguments(UserRoleEnum.ADMIN),
-                // メンバー
+				// メンバー
 				arguments(UserRoleEnum.MEMBER));
 		}
 
