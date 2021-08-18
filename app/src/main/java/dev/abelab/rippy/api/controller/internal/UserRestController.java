@@ -1,13 +1,14 @@
 package dev.abelab.rippy.api.controller.internal;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.annotation.Validated;
 
 import io.swagger.annotations.*;
 import lombok.*;
+import dev.abelab.rippy.annotation.Authenticated;
+import dev.abelab.rippy.db.entity.User;
 import dev.abelab.rippy.api.request.UserCreateRequest;
 import dev.abelab.rippy.api.request.UserUpdateRequest;
 import dev.abelab.rippy.api.response.UsersResponse;
@@ -18,6 +19,7 @@ import dev.abelab.rippy.service.UserService;
 @RestController
 @RequestMapping(path = "/api/users", produces = MediaType.APPLICATION_JSON_VALUE)
 @Validated
+@Authenticated
 public class UserRestController {
 
     private final UserService userService;
@@ -25,7 +27,7 @@ public class UserRestController {
     /**
      * ユーザ一覧取得API
      *
-     * @param token Bearerトークン
+     * @param loginUser ログインユーザ
      *
      * @return ユーザ一覧レスポンス
      */
@@ -42,15 +44,15 @@ public class UserRestController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public UsersResponse getUsers( //
-        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = true) final String token //
+        @ModelAttribute("LoginUser") final User loginUser //
     ) {
-        return this.userService.getUsers(token);
+        return this.userService.getUsers(loginUser);
     }
 
     /**
      * ユーザ作成API
      *
-     * @param token       Bearerトークン
+     * @param loginUser   ログインユーザ
      *
      * @param requestBody ユーザ作成リクエスト
      */
@@ -70,16 +72,16 @@ public class UserRestController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void createUser( //
-        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = true) final String token, //
+        @ModelAttribute("LoginUser") final User loginUser, //
         @Validated @ApiParam(name = "body", required = true, value = "新規ユーザ情報") @RequestBody final UserCreateRequest requestBody //
     ) {
-        this.userService.createUser(requestBody, token);
+        this.userService.createUser(requestBody, loginUser);;
     }
 
     /**
      * ユーザ更新API
      *
-     * @param token       Bearerトークン
+     * @param loginUser   ログインユーザ
      *
      * @param userId      ユーザID
      *
@@ -100,19 +102,19 @@ public class UserRestController {
     @PutMapping(value = "/{user_id}")
     @ResponseStatus(HttpStatus.OK)
     public void updateUser( //
-        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = true) final String token, //
+        @ModelAttribute("LoginUser") final User loginUser, //
         @ApiParam(name = "user_id", required = true, value = "ユーザID") @PathVariable("user_id") final int userId, //
         @Validated @ApiParam(name = "body", required = true, value = "ユーザ更新情報") @RequestBody final UserUpdateRequest requestBody //
     ) {
-        this.userService.updateUser(userId, requestBody, token);
+        this.userService.updateUser(userId, requestBody, loginUser);
     }
 
     /**
      * ユーザ削除API
      *
-     * @param token  Bearerトークン
+     * @param loginUser ログインユーザ
      *
-     * @param userId ユーザID
+     * @param userId    ユーザID
      */
     @ApiOperation( //
         value = "ユーザの削除", //
@@ -129,10 +131,10 @@ public class UserRestController {
     @DeleteMapping(value = "/{user_id}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteUser( //
-        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = true) final String token, //
+        @ModelAttribute("LoginUser") final User loginUser, //
         @ApiParam(name = "user_id", required = true, value = "ユーザID") @PathVariable("user_id") final int userId //
     ) {
-        this.userService.deleteUser(userId, token);
+        this.userService.deleteUser(userId, loginUser);
     }
 
 }

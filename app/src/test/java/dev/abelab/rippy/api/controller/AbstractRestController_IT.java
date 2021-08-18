@@ -238,13 +238,13 @@ public abstract class AbstractRestController_IT {
 	}
 
 	/**
-	 * ユーザのBearerトークンを取得
+	 * ログインユーザの資格情報を取得
 	 *
-	 * @param user ユーザ
+	 * @param user ログインユーザ
 	 *
-	 * @return Bearerトークン
+	 * @return 資格情報
 	 */
-	public String getLoginUserToken(User user) throws Exception {
+	public String getLoginUserCredentials(User user) throws Exception {
 		return "Bearer " + this.userLogic.generateJwt(user);
 	}
 
