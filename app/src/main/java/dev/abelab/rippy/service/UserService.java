@@ -31,14 +31,14 @@ public class UserService {
     /**
      * ユーザ一覧を取得
      *
-     * @param jwt JWT
+     * @param token Bearerトークン
      *
      * @return ユーザ一覧レスポンス
      */
     @Transactional
-    public UsersResponse getUsers(final String jwt) {
+    public UsersResponse getUsers(final String token) {
         // ログインユーザの取得
-        final var loginUser = this.userLogic.getLoginUser(jwt);
+        final var loginUser = this.userLogic.getLoginUser(token);
 
         // 管理者かチェック
         this.userLogic.checkAdmin(loginUser.getId());
@@ -55,14 +55,14 @@ public class UserService {
     /**
      * ユーザを作成
      *
-     * @param jwt         JWT
+     * @param token       Bearerトークン
      *
      * @param requestBody ユーザ作成リクエスト
      */
     @Transactional
-    public void createUser(final UserCreateRequest requestBody, final String jwt) {
+    public void createUser(final UserCreateRequest requestBody, final String token) {
         // ログインユーザの取得
-        final var loginUser = this.userLogic.getLoginUser(jwt);
+        final var loginUser = this.userLogic.getLoginUser(token);
 
         // 管理者かチェック
         this.userLogic.checkAdmin(loginUser.getId());
@@ -82,16 +82,16 @@ public class UserService {
     /**
      * ユーザを更新
      *
-     * @param jwt         JWT
+     * @param token       Bearerトークン
      *
      * @param userId      ユーザID
      *
      * @param requestBody ユーザ更新リクエスト
      */
     @Transactional
-    public void updateUser(final int userId, final UserUpdateRequest requestBody, final String jwt) {
+    public void updateUser(final int userId, final UserUpdateRequest requestBody, final String token) {
         // ログインユーザを取得
-        final var loginUser = this.userLogic.getLoginUser(jwt);
+        final var loginUser = this.userLogic.getLoginUser(token);
 
         // 管理者かチェック
         this.userLogic.checkAdmin(loginUser.getId());
@@ -109,14 +109,14 @@ public class UserService {
     /**
      * ユーザを削除
      *
-     * @param jwt    JWT
+     * @param token  Bearerトークン
      *
      * @param userId ユーザID
      */
     @Transactional
-    public void deleteUser(final int userId, final String jwt) {
+    public void deleteUser(final int userId, final String token) {
         // ログインユーザを取得
-        final var loginUser = this.userLogic.getLoginUser(jwt);
+        final var loginUser = this.userLogic.getLoginUser(token);
 
         // 管理者かチェック
         this.userLogic.checkAdmin(loginUser.getId());

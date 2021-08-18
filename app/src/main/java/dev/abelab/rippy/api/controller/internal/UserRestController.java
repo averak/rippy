@@ -25,7 +25,7 @@ public class UserRestController {
     /**
      * ユーザ一覧取得API
      *
-     * @param jwt JWT
+     * @param token Bearerトークン
      *
      * @return ユーザ一覧レスポンス
      */
@@ -42,15 +42,15 @@ public class UserRestController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public UsersResponse getUsers( //
-        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = true) final String jwt //
+        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = true) final String token //
     ) {
-        return this.userService.getUsers(jwt);
+        return this.userService.getUsers(token);
     }
 
     /**
      * ユーザ作成API
      *
-     * @param jwt         JWT
+     * @param token       Bearerトークン
      *
      * @param requestBody ユーザ作成リクエスト
      */
@@ -70,16 +70,16 @@ public class UserRestController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void createUser( //
-        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = true) final String jwt, //
+        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = true) final String token, //
         @Validated @ApiParam(name = "body", required = true, value = "新規ユーザ情報") @RequestBody final UserCreateRequest requestBody //
     ) {
-        this.userService.createUser(requestBody, jwt);
+        this.userService.createUser(requestBody, token);
     }
 
     /**
      * ユーザ更新API
      *
-     * @param jwt         JWT
+     * @param token       Bearerトークン
      *
      * @param userId      ユーザID
      *
@@ -100,17 +100,17 @@ public class UserRestController {
     @PutMapping(value = "/{user_id}")
     @ResponseStatus(HttpStatus.OK)
     public void updateUser( //
-        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = true) final String jwt, //
+        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = true) final String token, //
         @ApiParam(name = "user_id", required = true, value = "ユーザID") @PathVariable("user_id") final int userId, //
         @Validated @ApiParam(name = "body", required = true, value = "ユーザ更新情報") @RequestBody final UserUpdateRequest requestBody //
     ) {
-        this.userService.updateUser(userId, requestBody, jwt);
+        this.userService.updateUser(userId, requestBody, token);
     }
 
     /**
      * ユーザ削除API
      *
-     * @param jwt    JWT
+     * @param token  Bearerトークン
      *
      * @param userId ユーザID
      */
@@ -129,10 +129,10 @@ public class UserRestController {
     @DeleteMapping(value = "/{user_id}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteUser( //
-        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = true) final String jwt, //
+        @RequestHeader(name = HttpHeaders.AUTHORIZATION, required = true) final String token, //
         @ApiParam(name = "user_id", required = true, value = "ユーザID") @PathVariable("user_id") final int userId //
     ) {
-        this.userService.deleteUser(userId, jwt);
+        this.userService.deleteUser(userId, token);
     }
 
 }
