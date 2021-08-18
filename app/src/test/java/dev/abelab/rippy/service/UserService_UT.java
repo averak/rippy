@@ -12,11 +12,11 @@ import dev.abelab.rippy.repository.UserRepository;
  */
 class UserService_UT extends AbstractService_UT {
 
-	@Injectable
-	UserRepository userRepository;
-
 	@Tested
 	ModelMapper modelMapper;
+
+	@Injectable
+	UserRepository userRepository;
 
 	@Tested
 	UserService userService;

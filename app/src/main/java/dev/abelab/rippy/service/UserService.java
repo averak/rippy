@@ -14,7 +14,8 @@ import dev.abelab.rippy.api.response.UserResponse;
 import dev.abelab.rippy.api.response.UsersResponse;
 import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.logic.UserLogic;
-import dev.abelab.rippy.logic.UserRoleLogic;
+import dev.abelab.rippy.util.AuthUtil;
+import dev.abelab.rippy.util.UserRoleUtil;
 
 @RequiredArgsConstructor
 @Service
@@ -26,8 +27,6 @@ public class UserService {
 
     private final UserLogic userLogic;
 
-    private final UserRoleLogic usreRoleLogic;
-
     /**
      * ユーザ一覧を取得
      *
@@ -38,7 +37,7 @@ public class UserService {
     @Transactional
     public UsersResponse getUsers(final User loginUser) {
         // 管理者かチェック
-        this.userLogic.checkAdmin(loginUser.getId());
+        AuthUtil.checkAdmin(loginUser);
 
         // ユーザ一覧の取得
         final var users = this.userRepository.selectAll();
@@ -59,13 +58,13 @@ public class UserService {
     @Transactional
     public void createUser(final UserCreateRequest requestBody, final User loginUser) {
         // 管理者かチェック
-        this.userLogic.checkAdmin(loginUser.getId());
+        AuthUtil.checkAdmin(loginUser);
 
         // 有効なユーザロールかチェック
-        this.usreRoleLogic.checkForValidRoleId(requestBody.getRoleId());
+        UserRoleUtil.checkForValidRoleId(requestBody.getRoleId());
 
         // 有効なパスワードかチェック
-        this.userLogic.validatePassword(requestBody.getPassword());
+        AuthUtil.validatePassword(requestBody.getPassword());
 
         // ユーザを作成
         final var user = this.modelMapper.map(requestBody, User.class);
@@ -85,7 +84,10 @@ public class UserService {
     @Transactional
     public void updateUser(final int userId, final UserUpdateRequest requestBody, final User loginUser) {
         // 管理者かチェック
-        this.userLogic.checkAdmin(loginUser.getId());
+        AuthUtil.checkAdmin(loginUser);
+
+        // 有効なユーザロールかチェック
+        UserRoleUtil.checkForValidRoleId(requestBody.getRoleId());
 
         // ユーザを更新
         final var user = this.userRepository.selectById(userId);
@@ -107,7 +109,7 @@ public class UserService {
     @Transactional
     public void deleteUser(final int userId, final User loginUser) {
         // 管理者かチェック
-        this.userLogic.checkAdmin(loginUser.getId());
+        AuthUtil.checkAdmin(loginUser);
 
         // ユーザを削除
         this.userRepository.deleteById(userId);

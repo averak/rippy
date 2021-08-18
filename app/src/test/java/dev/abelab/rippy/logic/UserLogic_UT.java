@@ -26,8 +26,6 @@ import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.property.JwtProperty;
 import dev.abelab.rippy.exception.ErrorCode;
 import dev.abelab.rippy.exception.BaseException;
-import dev.abelab.rippy.exception.ForbiddenException;
-import dev.abelab.rippy.exception.BadRequestException;
 import dev.abelab.rippy.exception.UnauthorizedException;
 
 public class UserLogic_UT extends AbstractLogic_UT {
@@ -44,44 +42,6 @@ public class UserLogic_UT extends AbstractLogic_UT {
     @Tested
     UserLogic userLogic;
 
-    /**
-     * Test for check admin
-     */
-    @Nested
-    @TestInstance(PER_CLASS)
-    class CheckAdminTest {
-
-        @ParameterizedTest
-        @MethodSource
-        void 正_管理者かチェック(final UserRoleEnum userRole, final BaseException exception) {
-            // setup
-            final var user = UserSample.builder().roleId(userRole.getId()).build();
-
-            new Expectations() {
-                {
-                    userRepository.selectById(anyInt);
-                    result = user;
-                }
-            };
-
-            // verify
-            if (exception == null) {
-                assertDoesNotThrow(() -> userLogic.checkAdmin(user.getId()));
-            } else {
-                final var occurredException = assertThrows(exception.getClass(), () -> userLogic.checkAdmin(user.getId()));
-                assertThat(occurredException.getErrorCode()).isEqualTo(exception.getErrorCode());
-            }
-        }
-
-        Stream<Arguments> 正_管理者かチェック() {
-            return Stream.of(
-                // 管理者
-                arguments(UserRoleEnum.ADMIN, null),
-                // メンバー
-                arguments(UserRoleEnum.MEMBER, new ForbiddenException(ErrorCode.USER_HAS_NO_PERMISSION)));
-        }
-
-    }
     /**
      * Test for generate jwt
      */
@@ -241,45 +201,6 @@ public class UserLogic_UT extends AbstractLogic_UT {
             // verify
             final var occurredException = assertThrows(UnauthorizedException.class, () -> userLogic.verifyPassword(user, anyString()));
             assertThat(occurredException.getErrorCode()).isEqualTo(ErrorCode.WRONG_PASSWORD);
-        }
-
-    }
-
-    /**
-     * Test for validate password
-     */
-    @Nested
-    @TestInstance(PER_CLASS)
-    public class ValidatePasswordTest {
-
-        @ParameterizedTest
-        @MethodSource
-        void パスワードが有効かどうか(final String password, final BaseException exception) {
-            // verify
-            if (exception == null) {
-                assertDoesNotThrow(() -> userLogic.validatePassword(password));
-            } else {
-                final var occurredException = assertThrows(exception.getClass(), () -> userLogic.validatePassword(password));
-                assertThat(occurredException.getErrorCode()).isEqualTo(exception.getErrorCode());
-            }
-        }
-
-        Stream<Arguments> パスワードが有効かどうか() {
-            return Stream.of( //
-                // 有効
-                arguments("f4BabxEr", null), //
-                arguments("f4BabxEr4gNsjdtRpH9Pfs6Atth9bqdA", null), //
-                // 無効：8文字以下
-                arguments("f4BabxE", new BadRequestException(ErrorCode.INVALID_PASSWORD_SIZE)), //
-                // 無効：33文字以上
-                arguments("f4BabxEr4gNsjdtRpH9Pfs6Atth9bqdAN", new BadRequestException(ErrorCode.INVALID_PASSWORD_SIZE)), //
-                // 無効：大文字を含まない
-                arguments("f4babxer", new BadRequestException(ErrorCode.TOO_SIMPLE_PASSWORD)), //
-                // 無効：小文字を含まない
-                arguments("F4BABXER", new BadRequestException(ErrorCode.TOO_SIMPLE_PASSWORD)), //
-                // 無効：数字を含まない
-                arguments("fxbabxEr", new BadRequestException(ErrorCode.TOO_SIMPLE_PASSWORD)) //
-            );
         }
 
     }
