@@ -347,6 +347,50 @@ public class UserRestController_IT extends AbstractRestController_IT {
 			);
 		}
 
+		@ParameterizedTest
+		@MethodSource
+		void 異_無効なユーザロール(final int roleId) throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.ADMIN);
+			final var credentials = getLoginUserCredentials(loginUser);
+
+			final var user = UserSample.builder().password(LOGIN_USER_PASSWORD).build();
+			userRepository.insert(user);
+
+			user.setRoleId(roleId);
+			final var requestBody = modelMapper.map(user, UserCreateRequest.class);
+
+			// test
+			final var request = putRequest(String.format(UPDATE_USER_PATH, user.getId()), requestBody);
+			request.header(HttpHeaders.AUTHORIZATION, credentials);
+			execute(request, new NotFoundException(ErrorCode.NOT_FOUND_USER_ROLE));
+		}
+
+		Stream<Arguments> 異_無効なユーザロール() {
+			return Stream.of( //
+				arguments(0), //
+				arguments(UserRoleEnum.values().length + 1) //
+			);
+		}
+
+		@Test
+		void 異_更新後のメールアドレスが既に存在する() throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.ADMIN);
+			final var credentials = getLoginUserCredentials(loginUser);
+
+			final var user = UserSample.builder().password(LOGIN_USER_PASSWORD).build();
+			userRepository.insert(user);
+
+			user.setEmail(loginUser.getEmail());
+			final var requestBody = modelMapper.map(user, UserCreateRequest.class);
+
+			// test
+			final var request = postRequest(CREATE_USER_PATH, requestBody);
+			request.header(HttpHeaders.AUTHORIZATION, credentials);
+			execute(request, new ConflictException(ErrorCode.CONFLICT_EMAIL));
+		}
+
 		@Test
 		void 異_更新対象ユーザが存在しない() throws Exception {
 			// setup

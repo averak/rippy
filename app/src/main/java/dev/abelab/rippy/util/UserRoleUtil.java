@@ -1,4 +1,4 @@
-package dev.abelab.rippy.logic;
+package dev.abelab.rippy.util;
 
 import java.util.Arrays;
 
@@ -11,14 +11,14 @@ import dev.abelab.rippy.exception.NotFoundException;
 
 @RequiredArgsConstructor
 @Component
-public class UserRoleLogic {
+public class UserRoleUtil {
 
     /**
      * 有効なユーザロールかチェック
      *
      * @param roleId ロールID
      */
-    public void checkForValidRoleId(final int roleId) {
+    public static void checkForValidRoleId(final int roleId) {
         Arrays.stream(UserRoleEnum.values()).filter(e -> e.getId() == roleId) //
             .findFirst().orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND_USER_ROLE));
     }

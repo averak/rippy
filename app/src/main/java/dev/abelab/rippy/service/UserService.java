@@ -14,8 +14,8 @@ import dev.abelab.rippy.api.response.UserResponse;
 import dev.abelab.rippy.api.response.UsersResponse;
 import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.logic.UserLogic;
-import dev.abelab.rippy.logic.UserRoleLogic;
 import dev.abelab.rippy.util.AuthUtil;
+import dev.abelab.rippy.util.UserRoleUtil;
 
 @RequiredArgsConstructor
 @Service
@@ -26,8 +26,6 @@ public class UserService {
     private final UserRepository userRepository;
 
     private final UserLogic userLogic;
-
-    private final UserRoleLogic usreRoleLogic;
 
     /**
      * ユーザ一覧を取得
@@ -63,7 +61,7 @@ public class UserService {
         AuthUtil.checkAdmin(loginUser);
 
         // 有効なユーザロールかチェック
-        this.usreRoleLogic.checkForValidRoleId(requestBody.getRoleId());
+        UserRoleUtil.checkForValidRoleId(requestBody.getRoleId());
 
         // 有効なパスワードかチェック
         AuthUtil.validatePassword(requestBody.getPassword());
@@ -87,6 +85,9 @@ public class UserService {
     public void updateUser(final int userId, final UserUpdateRequest requestBody, final User loginUser) {
         // 管理者かチェック
         AuthUtil.checkAdmin(loginUser);
+
+        // 有効なユーザロールかチェック
+        UserRoleUtil.checkForValidRoleId(requestBody.getRoleId());
 
         // ユーザを更新
         final var user = this.userRepository.selectById(userId);

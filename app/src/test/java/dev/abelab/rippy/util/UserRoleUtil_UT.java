@@ -1,4 +1,4 @@
-package dev.abelab.rippy.logic;
+package dev.abelab.rippy.util;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,16 +12,12 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import mockit.Tested;
 
 import dev.abelab.rippy.enums.UserRoleEnum;
 import dev.abelab.rippy.exception.ErrorCode;
 import dev.abelab.rippy.exception.NotFoundException;
 
-public class UserRoleLogic_UT extends AbstractLogic_UT {
-
-    @Tested
-    UserRoleLogic userRoleLogic;
+public class UserRoleUtil_UT extends AbstractUtil_UT {
 
     /**
      * Test for check for valid roleId
@@ -35,7 +31,7 @@ public class UserRoleLogic_UT extends AbstractLogic_UT {
         void 正_存在するユーザロール(final int roleId) {
             // verify
             assertThatCode(() -> {
-                userRoleLogic.checkForValidRoleId(roleId);
+                UserRoleUtil.checkForValidRoleId(roleId);
             }).doesNotThrowAnyException();
         }
 
@@ -52,7 +48,7 @@ public class UserRoleLogic_UT extends AbstractLogic_UT {
         @MethodSource
         void 異_存在しないユーザロール(final int roleId) {
             // verify
-            final var exception = assertThrows(NotFoundException.class, () -> userRoleLogic.checkForValidRoleId(roleId));
+            final var exception = assertThrows(NotFoundException.class, () -> UserRoleUtil.checkForValidRoleId(roleId));
             assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND_USER_ROLE);
         }
 
