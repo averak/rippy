@@ -11,6 +11,7 @@ import dev.abelab.rippy.annotation.Authenticated;
 import dev.abelab.rippy.db.entity.User;
 import dev.abelab.rippy.api.request.UserCreateRequest;
 import dev.abelab.rippy.api.request.UserUpdateRequest;
+import dev.abelab.rippy.api.response.UserResponse;
 import dev.abelab.rippy.api.response.UsersResponse;
 import dev.abelab.rippy.service.UserService;
 
@@ -135,6 +136,31 @@ public class UserRestController {
         @ApiParam(name = "user_id", required = true, value = "ユーザID") @PathVariable("user_id") final int userId //
     ) {
         this.userService.deleteUser(userId, loginUser);
+    }
+
+    /**
+     * ログインユーザ詳細取得API
+     *
+     * @param loginUser ログインユーザ
+     *
+     * @return ユーザ詳細レスポンス
+     */
+    @ApiOperation( //
+        value = "ログインユーザ詳細の取得", //
+        notes = "ログインユーザ詳細を取得する。" //
+    )
+    @ApiResponses( //
+        value = { //
+                @ApiResponse(code = 200, message = "取得成功", response = UserResponse.class), //
+                @ApiResponse(code = 401, message = "ユーザがログインしていない"), //
+                @ApiResponse(code = 404, message = "ユーザが存在しない") //
+        })
+    @GetMapping(value = "/me")
+    @ResponseStatus(HttpStatus.OK)
+    public UserResponse getLoginUser( //
+        @ModelAttribute("LoginUser") final User loginUser //
+    ) {
+        return this.userService.getLoginUser(loginUser);
     }
 
 }
