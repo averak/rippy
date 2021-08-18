@@ -55,6 +55,19 @@ public class UserRepository {
     }
 
     /**
+     * ユーザを削除
+     *
+     * @param userId ユーザID
+     */
+    public void deleteById(final int userId) {
+        if (this.existsById(userId)) {
+            this.userMapper.deleteByPrimaryKey(userId);
+        } else {
+            throw new NotFoundException(ErrorCode.NOT_FOUND_USER);
+        }
+    }
+
+    /**
      * IDからユーザを検索
      *
      * @param userId ユーザID
@@ -78,6 +91,22 @@ public class UserRepository {
         example.createCriteria().andEmailEqualTo(email);
         return this.userMapper.selectByExample(example).stream().findFirst() //
             .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND_USER));
+    }
+
+    /**
+     * ユーザIDの存在確認
+     *
+     * @param userId ユーザID
+     *
+     * @return ユーザIDが存在するか
+     */
+    public boolean existsById(final int userId) {
+        try {
+            this.selectById(userId);
+            return true;
+        } catch (NotFoundException e) {
+            return false;
+        }
     }
 
     /**
