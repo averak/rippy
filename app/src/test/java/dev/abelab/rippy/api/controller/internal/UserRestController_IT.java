@@ -340,9 +340,9 @@ public class UserRestController_IT extends AbstractRestController_IT {
 
 		Stream<Arguments> 正_ユーザロールを更新() {
 			return Stream.of( //
-				// 管理者 -> 一般
+				// 管理者 -> メンバー
 				arguments(UserRoleEnum.ADMIN, UserRoleEnum.MEMBER), //
-				// 一般 -> 管理者
+				// メンバー -> 管理者
 				arguments(UserRoleEnum.MEMBER, UserRoleEnum.ADMIN) //
 			);
 		}
@@ -468,7 +468,7 @@ public class UserRestController_IT extends AbstractRestController_IT {
 			return Stream.of(
 				// 管理者
 				arguments(UserRoleEnum.ADMIN),
-				// 一般
+				// メンバー
 				arguments(UserRoleEnum.MEMBER));
 		}
 

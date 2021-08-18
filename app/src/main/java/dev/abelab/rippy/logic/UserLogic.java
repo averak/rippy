@@ -8,12 +8,9 @@ import io.jsonwebtoken.*;
 
 import lombok.*;
 import dev.abelab.rippy.db.entity.User;
-import dev.abelab.rippy.enums.UserRoleEnum;
 import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.property.JwtProperty;
 import dev.abelab.rippy.exception.ErrorCode;
-import dev.abelab.rippy.exception.ForbiddenException;
-import dev.abelab.rippy.exception.BadRequestException;
 import dev.abelab.rippy.exception.UnauthorizedException;
 
 @RequiredArgsConstructor
@@ -25,19 +22,6 @@ public class UserLogic {
     private final JwtProperty jwtProperty;
 
     private final PasswordEncoder passwordEncoder;
-
-    /**
-     * 管理者チェック
-     *
-     * @param userId ユーザID
-     */
-    public void checkAdmin(final int userId) {
-        final var user = this.userRepository.selectById(userId);
-
-        if (user.getRoleId() != UserRoleEnum.ADMIN.getId()) {
-            throw new ForbiddenException(ErrorCode.USER_HAS_NO_PERMISSION);
-        }
-    }
 
     /**
      * JWTを発行
@@ -112,20 +96,6 @@ public class UserLogic {
     public void verifyPassword(final User user, final String password) {
         if (!this.passwordEncoder.matches(password, user.getPassword())) {
             throw new UnauthorizedException(ErrorCode.WRONG_PASSWORD);
-        }
-    }
-
-    /**
-     * パスワードが有効かチェック
-     */
-    public void validatePassword(final String password) {
-        // 8~32文字かどうか
-        if (password.length() < 8 || password.length() > 32) {
-            throw new BadRequestException(ErrorCode.INVALID_PASSWORD_SIZE);
-        }
-        // 大文字・小文字・数字を含むか
-        if (!password.matches("^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).+$")) {
-            throw new BadRequestException(ErrorCode.TOO_SIMPLE_PASSWORD);
         }
     }
 
