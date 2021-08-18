@@ -11,6 +11,7 @@
 			<property name="builder" value="true" />
 			<property name="allArgsConstructor" value="true" />
 		</plugin>
+		<plugin type="dev.abelab.rippy.plugin.CustomMapperNamePlugin" />
 
 		<commentGenerator>
 			<property name="suppressDate" value="true" />

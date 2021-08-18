@@ -31,10 +31,10 @@ rippy:
     model:
       package: db.entity
     client:
-      package: db.mapper
+      package: db.mapper.base
       type: XMLMAPPER
     map:
-      package: db.mapper
+      package: db.mapper.base
   protocol: http
   hostname: localhost:${server.port}
   admin:
@@ -48,6 +48,7 @@ mybatis:
   configuration:
     mapUnderscoreToCamelCase: true
   mapperLocations:
+    - classpath:/db/mapper/base/*Mapper.xml
     - classpath:/db/mapper/*Mapper.xml
 
 jwt:
