@@ -41,6 +41,6 @@ public class AuthRestController {
         final HttpServletResponse response //
     ) {
         final var jwt = this.authService.login(requestBody);
-        response.setHeader(HttpHeaders.AUTHORIZATION, jwt);
+        response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
     }
 }

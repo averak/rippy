@@ -238,14 +238,14 @@ public abstract class AbstractRestController_IT {
 	}
 
 	/**
-	 * ユーザのJWTを取得
+	 * ユーザのBearerトークンを取得
 	 *
 	 * @param user ユーザ
 	 *
-	 * @return JWT
+	 * @return Bearerトークン
 	 */
-	public String getLoginUserJwt(User user) throws Exception {
-		return this.userLogic.generateJwt(user);
+	public String getLoginUserToken(User user) throws Exception {
+		return "Bearer " + this.userLogic.generateJwt(user);
 	}
 
 	@BeforeEach
