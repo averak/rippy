@@ -10,6 +10,7 @@ import lombok.*;
 import dev.abelab.rippy.db.entity.User;
 import dev.abelab.rippy.api.request.UserCreateRequest;
 import dev.abelab.rippy.api.request.UserUpdateRequest;
+import dev.abelab.rippy.api.request.LoginUserUpdateRequest;
 import dev.abelab.rippy.api.response.UserResponse;
 import dev.abelab.rippy.api.response.UsersResponse;
 import dev.abelab.rippy.repository.UserRepository;
@@ -125,6 +126,20 @@ public class UserService {
     @Transactional
     public UserResponse getLoginUser(final User loginUser) {
         return this.modelMapper.map(loginUser, UserResponse.class);
+    }
+
+    /**
+     * ログインユーザを更新
+     *
+     * @param loginUser ログインユーザ
+     */
+    @Transactional
+    public void updateLoginUser(final LoginUserUpdateRequest requestBody, final User loginUser) {
+        // ログインユーザを更新
+        loginUser.setFirstName(requestBody.getFirstName());
+        loginUser.setLastName(requestBody.getLastName());
+        loginUser.setEmail(requestBody.getEmail());
+        this.userRepository.update(loginUser);
     }
 
 }
