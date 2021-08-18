@@ -96,6 +96,7 @@ public class UserService {
         // 管理者かチェック
         this.userLogic.checkAdmin(loginUser.getId());
 
+        // ユーザを更新
         final var user = this.userRepository.selectById(userId);
         user.setFirstName(requestBody.getFirstName());
         user.setLastName(requestBody.getLastName());
@@ -103,6 +104,25 @@ public class UserService {
         user.setRoleId(requestBody.getRoleId());
         user.setAdmissionYear(requestBody.getAdmissionYear());
         this.userRepository.update(user);
+    }
+
+    /**
+     * ユーザを削除
+     *
+     * @param jwt    JWT
+     *
+     * @param userId ユーザID
+     */
+    @Transactional
+    public void deleteUser(final int userId, final String jwt) {
+        // ログインユーザを取得
+        final var loginUser = this.userLogic.getLoginUser(jwt);
+
+        // 管理者かチェック
+        this.userLogic.checkAdmin(loginUser.getId());
+
+        // ユーザを削除
+        this.userRepository.deleteById(userId);
     }
 
 }
