@@ -11,6 +11,7 @@ import dev.abelab.rippy.db.entity.User;
 import dev.abelab.rippy.api.request.UserCreateRequest;
 import dev.abelab.rippy.api.request.UserUpdateRequest;
 import dev.abelab.rippy.api.request.LoginUserUpdateRequest;
+import dev.abelab.rippy.api.request.LoginUserPasswordUpdateRequest;
 import dev.abelab.rippy.api.response.UserResponse;
 import dev.abelab.rippy.api.response.UsersResponse;
 import dev.abelab.rippy.repository.UserRepository;
@@ -139,6 +140,24 @@ public class UserService {
         loginUser.setFirstName(requestBody.getFirstName());
         loginUser.setLastName(requestBody.getLastName());
         loginUser.setEmail(requestBody.getEmail());
+        this.userRepository.update(loginUser);
+    }
+
+    /**
+     * ログインユーザのパスワードを更新
+     *
+     * @param loginUser ログインユーザ
+     */
+    @Transactional
+    public void updateLoginPasswordUser(final LoginUserPasswordUpdateRequest requestBody, final User loginUser) {
+        // 現在のパスワードチェック
+        this.userLogic.verifyPassword(loginUser, requestBody.getCurrentPassword());
+
+        // 有効なパスワードかチェック
+        AuthUtil.validatePassword(requestBody.getNewPassword());
+
+        // ログインユーザのパスワードを更新
+        loginUser.setPassword(this.userLogic.encodePassword(requestBody.getNewPassword()));
         this.userRepository.update(loginUser);
     }
 
