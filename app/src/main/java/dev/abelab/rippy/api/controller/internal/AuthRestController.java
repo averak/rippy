@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import io.swagger.annotations.*;
 import lombok.*;
 import dev.abelab.rippy.api.request.LoginRequest;
+import dev.abelab.rippy.api.response.AccessTokenResponse;
 import dev.abelab.rippy.service.AuthService;
 
 @Api(tags = "Auth")
@@ -30,17 +31,15 @@ public class AuthRestController {
         notes = "ユーザのログイン処理を行う。" //
     )
     @ApiResponses(value = { //
-            @ApiResponse(code = 200, message = "ログイン成功"), //
+            @ApiResponse(code = 200, message = "ログイン成功", response = AccessTokenResponse.class), //
             @ApiResponse(code = 401, message = "パスワードが間違っている"), //
             @ApiResponse(code = 404, message = "ユーザが存在しない"), //
     })
     @PostMapping(value = "/login")
     @ResponseStatus(HttpStatus.OK)
-    public void login( //
-        @Validated @ApiParam(name = "body", required = true, value = "ログイン情報") @RequestBody final LoginRequest requestBody, //
-        final HttpServletResponse response //
+    public AccessTokenResponse login( //
+        @Validated @ApiParam(name = "body", required = true, value = "ログイン情報") @RequestBody final LoginRequest requestBody //
     ) {
-        final var jwt = this.authService.login(requestBody);
-        response.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + jwt);
+        return this.authService.login(requestBody);
     }
 }
