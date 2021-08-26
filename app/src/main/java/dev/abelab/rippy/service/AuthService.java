@@ -7,6 +7,7 @@ import lombok.*;
 import dev.abelab.rippy.db.entity.User;
 import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.api.request.LoginRequest;
+import dev.abelab.rippy.api.response.AccessTokenResponse;
 import dev.abelab.rippy.logic.UserLogic;
 import dev.abelab.rippy.exception.ErrorCode;
 import dev.abelab.rippy.exception.UnauthorizedException;
@@ -24,10 +25,10 @@ public class AuthService {
      *
      * @param requestBody ログインリクエスト
      *
-     * @return JWT
+     * @return アクセストークンレスポンス
      */
     @Transactional
-    public String login(final LoginRequest requestBody) {
+    public AccessTokenResponse login(final LoginRequest requestBody) {
         // ユーザ情報を取得
         final var user = this.userRepository.selectByEmail(requestBody.getEmail());
 
@@ -35,7 +36,11 @@ public class AuthService {
         this.userLogic.verifyPassword(user, requestBody.getPassword());
 
         // JWTを発行
-        return this.userLogic.generateJwt(user);
+        final var jwt = this.userLogic.generateJwt(user);
+        return AccessTokenResponse.builder() //
+            .accessToken(jwt) //
+            .tokenType("Bearer") //
+            .build();
     }
 
     /**

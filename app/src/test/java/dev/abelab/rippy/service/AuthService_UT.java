@@ -18,6 +18,7 @@ import mockit.Injectable;
 import mockit.Tested;
 
 import dev.abelab.rippy.db.entity.UserSample;
+import dev.abelab.rippy.api.request.LoginRequest;
 import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.logic.UserLogic;
 import dev.abelab.rippy.exception.ErrorCode;
@@ -37,6 +38,41 @@ class AuthService_UT extends AbstractService_UT {
 
 	@Tested
 	AuthService authService;
+
+	/**
+	 * Test for login
+	 */
+	@Nested
+	@TestInstance(PER_CLASS)
+	class LoginTest {
+
+		@Test
+		void 正_ユーザがログイン() {
+			// setup
+			final var user = UserSample.builder().build();
+
+			new Expectations() {
+				{
+					userRepository.selectByEmail(anyString);
+					result = user;
+				}
+				{
+					userLogic.verifyPassword(user, anyString);
+					result = null;
+				}
+				{
+					userLogic.generateJwt(user);
+					result = SAMPLE_STR;
+				}
+			};
+
+			// verify
+			final var accessToken = authService.login(new LoginRequest());
+			assertThat(accessToken.getAccessToken()).isNotNull();
+			assertThat(accessToken.getTokenType()).isEqualTo("Bearer");
+		}
+
+	}
 
 	/**
 	 * Test for get login user

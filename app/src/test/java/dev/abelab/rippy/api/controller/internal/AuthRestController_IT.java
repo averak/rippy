@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import dev.abelab.rippy.api.controller.AbstractRestController_IT;
 import dev.abelab.rippy.db.entity.UserSample;
 import dev.abelab.rippy.api.request.LoginRequest;
+import dev.abelab.rippy.api.response.AccessTokenResponse;
 import dev.abelab.rippy.enums.UserRoleEnum;
 import dev.abelab.rippy.exception.ErrorCode;
 import dev.abelab.rippy.exception.NotFoundException;
@@ -53,11 +54,11 @@ public class AuthRestController_IT extends AbstractRestController_IT {
 
 			// test
 			final var request = postRequest("/api/login", requestBody);
-			final var response = execute(request, HttpStatus.OK);
+			final var response = execute(request, HttpStatus.OK, AccessTokenResponse.class);
 
 			// verify
-			assertThat(response.getResponse().getHeader(HttpHeaders.AUTHORIZATION)).isNotNull();
-			assertThat(response.getResponse().getHeader(HttpHeaders.AUTHORIZATION)).matches("Bearer .+");
+			assertThat(response.getAccessToken()).isNotNull();
+			assertThat(response.getTokenType()).isEqualTo("Bearer");
 		}
 
 		Stream<Arguments> 正_ユーザがログイン() {
