@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
 
+import java.util.Date;
 import java.util.Arrays;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
@@ -17,14 +18,19 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.ModelMapper;
 
 import dev.abelab.rippy.api.controller.AbstractRestController_IT;
 import dev.abelab.rippy.db.entity.EventSample;
 import dev.abelab.rippy.enums.UserRoleEnum;
 import dev.abelab.rippy.repository.EventRepository;
+import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.response.EventResponse;
 import dev.abelab.rippy.api.response.EventsResponse;
+import dev.abelab.rippy.util.DateTimeUtil;
 import dev.abelab.rippy.exception.ErrorCode;
+import dev.abelab.rippy.exception.BaseException;
+import dev.abelab.rippy.exception.BadRequestException;
 import dev.abelab.rippy.exception.UnauthorizedException;
 
 /**
@@ -35,6 +41,10 @@ public class EventRestController_IT extends AbstractRestController_IT {
 	// API PATH
 	static final String BASE_PATH = "/api/events";
 	static final String GET_EVENTS_PATH = BASE_PATH;
+	static final String CREATE_EVENT_PATH = BASE_PATH;
+
+	@Autowired
+	ModelMapper modelMapper;
 
 	@Autowired
 	EventRepository eventRepository;
@@ -75,7 +85,9 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 		Stream<Arguments> 正_イベント一覧を取得() {
 			return Stream.of( //
+				// 管理者
 				arguments(UserRoleEnum.ADMIN), //
+				// メンバー
 				arguments(UserRoleEnum.MEMBER) //
 			);
 		}
@@ -84,6 +96,93 @@ public class EventRestController_IT extends AbstractRestController_IT {
 		void 異_無効な認証ヘッダ() throws Exception {
 			// test
 			final var request = getRequest(GET_EVENTS_PATH);
+			request.header(HttpHeaders.AUTHORIZATION, "");
+			execute(request, new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN));
+		}
+
+	}
+
+	/**
+	 * イベント作成APIのテスト
+	 */
+	@Nested
+	@TestInstance(PER_CLASS)
+	class CreateEventTest extends AbstractRestControllerInitialization_IT {
+
+		@ParameterizedTest
+		@MethodSource
+		void 正_イベントを作成(final UserRoleEnum roleId) throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.MEMBER);
+			final var credentials = getLoginUserCredentials(loginUser);
+
+			final var event = EventSample.builder() //
+				.ownerId(loginUser.getId()) //
+				.expiredAt(DateTimeUtil.getTomorrow()) //
+				.build();
+			final var requestBody = modelMapper.map(event, EventCreateRequest.class);
+
+			// test
+			final var request = postRequest(CREATE_EVENT_PATH, requestBody);
+			request.header(HttpHeaders.AUTHORIZATION, credentials);
+			execute(request, HttpStatus.CREATED);
+
+			// verify
+			final var createdEvents = eventRepository.selectByOwnerId(loginUser.getId());
+			assertThat(createdEvents.size()).isEqualTo(1);
+			assertThat(createdEvents.get(0).getOwnerId()).isEqualTo(loginUser.getId());
+			assertThat(createdEvents.get(0).getExpiredAt()).isInSameMinuteAs(event.getExpiredAt());
+		}
+
+		Stream<Arguments> 正_イベントを作成() {
+			return Stream.of( //
+				// 管理者
+				arguments(UserRoleEnum.ADMIN), //
+				// メンバー
+				arguments(UserRoleEnum.MEMBER) //
+			);
+		}
+
+		@ParameterizedTest
+		@MethodSource
+		void 有効な募集締め切りかチェック(final Date expiredAt, final BaseException exception) throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.MEMBER);
+			final var credentials = getLoginUserCredentials(loginUser);
+
+			final var event = EventSample.builder() //
+				.ownerId(loginUser.getId()) //
+				.expiredAt(expiredAt) //
+				.build();
+			final var requestBody = modelMapper.map(event, EventCreateRequest.class);
+
+			// test
+			final var request = postRequest(CREATE_EVENT_PATH, requestBody);
+			request.header(HttpHeaders.AUTHORIZATION, credentials);
+			if (exception == null) {
+				execute(request, HttpStatus.CREATED);
+			} else {
+				execute(request, exception);
+			}
+		}
+
+		Stream<Arguments> 有効な募集締め切りかチェック() {
+			return Stream.of( //
+				// 過去の日時
+				arguments(DateTimeUtil.getYesterday(), new BadRequestException(ErrorCode.INVALID_EXPIRED_AT)), //
+				// 未来の日時
+				arguments(DateTimeUtil.getTomorrow(), null) //
+			);
+		}
+
+		@Test
+		void 異_無効な認証ヘッダ() throws Exception {
+			// setup
+			final var event = EventSample.builder().build();
+			final var requestBody = modelMapper.map(event, EventCreateRequest.class);
+
+			// test
+			final var request = postRequest(CREATE_EVENT_PATH, requestBody);
 			request.header(HttpHeaders.AUTHORIZATION, "");
 			execute(request, new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN));
 		}

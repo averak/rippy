@@ -9,6 +9,7 @@ import io.swagger.annotations.*;
 import lombok.*;
 import dev.abelab.rippy.annotation.Authenticated;
 import dev.abelab.rippy.db.entity.User;
+import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.response.EventsResponse;
 import dev.abelab.rippy.service.EventService;
 
@@ -44,6 +45,32 @@ public class EventRestController {
         @ModelAttribute("LoginUser") final User loginUser //
     ) {
         return this.eventService.getEvents(loginUser);
+    }
+
+    /**
+     * イベント作成API
+     *
+     * @param loginUser   ログインユーザ
+     *
+     * @param requestBody イベント作成リクエスト
+     */
+    @ApiOperation( //
+        value = "イベントの作成", //
+        notes = "イベントを作成する。" //
+    )
+    @ApiResponses( //
+        value = { //
+                @ApiResponse(code = 201, message = "作成成功"), //
+                @ApiResponse(code = 401, message = "ユーザがログインしていない"), //
+        } //
+    )
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public void createEvent( //
+        @ModelAttribute("LoginUser") final User loginUser, //
+        @Validated @ApiParam(name = "body", required = true, value = "新規イベント情報") @RequestBody final EventCreateRequest requestBody //
+    ) {
+        this.eventService.createEvent(requestBody, loginUser);
     }
 
 }
