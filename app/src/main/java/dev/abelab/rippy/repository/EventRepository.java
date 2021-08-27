@@ -23,7 +23,7 @@ public class EventRepository {
     public List<Event> selectAll() {
         final var eventExample = new EventExample();
         eventExample.setOrderByClause("updated_at desc");
-        return this.eventMapper.selectByExample(eventExample);
+        return this.eventMapper.selectByExampleWithBLOBs(eventExample);
     }
 
     /**
