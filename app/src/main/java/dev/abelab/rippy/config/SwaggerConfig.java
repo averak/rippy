@@ -34,7 +34,8 @@ public class SwaggerConfig {
             .apiInfo(apiInfo()) //
             .tags( //
                 new Tag("Auth", "認証"), //
-                new Tag("User", "ユーザ") //
+                new Tag("User", "ユーザ"), //
+                new Tag("Event", "イベント") //
             );
     }
 
