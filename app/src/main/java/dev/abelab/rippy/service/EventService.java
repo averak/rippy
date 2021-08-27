@@ -13,6 +13,7 @@ import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.response.EventResponse;
 import dev.abelab.rippy.api.response.EventsResponse;
 import dev.abelab.rippy.repository.EventRepository;
+import dev.abelab.rippy.util.EventUtil;
 
 @RequiredArgsConstructor
 @Service
@@ -49,11 +50,13 @@ public class EventService {
      */
     @Transactional
     public void createEvent(final EventCreateRequest requestBody, final User loginUser) {
-        // FIXME: 募集締め切りのバリデーション
-
-        // イベントの作成
         final var event = this.modelMapper.map(requestBody, Event.class);
         event.setOwnerId(loginUser.getId());
+
+        // 募集締め切りのバリデーション
+        EventUtil.validateExpiredAt(event);
+
+        // イベントの作成
         this.eventRepository.insert(event);
     }
 
