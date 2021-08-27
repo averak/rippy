@@ -8,6 +8,8 @@ import org.modelmapper.ModelMapper;
 
 import lombok.*;
 import dev.abelab.rippy.db.entity.User;
+import dev.abelab.rippy.db.entity.Event;
+import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.response.EventResponse;
 import dev.abelab.rippy.api.response.EventsResponse;
 import dev.abelab.rippy.repository.EventRepository;
@@ -36,6 +38,23 @@ public class EventService {
             .collect(Collectors.toList());
 
         return new EventsResponse(eventResponses);
+    }
+
+    /**
+     * イベントを作成
+     *
+     * @param イベント作成リクエスト
+     *
+     * @param loginUser   ログインユーザ
+     */
+    @Transactional
+    public void createEvent(final EventCreateRequest requestBody, final User loginUser) {
+        // FIXME: 募集締め切りのバリデーション
+
+        // イベントの作成
+        final var event = this.modelMapper.map(requestBody, Event.class);
+        event.setOwnerId(loginUser.getId());
+        this.eventRepository.insert(event);
     }
 
 }
