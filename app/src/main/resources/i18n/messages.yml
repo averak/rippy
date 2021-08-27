@@ -14,6 +14,7 @@ exception:
     validation_error: "Validation error has occurred."
     invalid_password_size: "Password size is invalid."
     too_simple_password: "Password is too simple."
+    invalid_expired_at: "Expired date is invalid."
   unauthorized:
     user_not_logged_in: "User has no logged in."
     wrong_password: "Password is wrong."

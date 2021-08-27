@@ -44,6 +44,8 @@ public enum ErrorCode {
 
     TOO_SIMPLE_PASSWORD(1402, "exception.bad_request.too_simple_password"),
 
+    INVALID_EXPIRED_AT(1403, "exception.bad_request.invalid_expired_at"),
+
     /**
      * Unauthorized: 1500~1599
      */
