@@ -29,7 +29,7 @@ public class EventResponse {
     String description;
 
     /**
-     * 所有者
+     * イベントオーナーID
      */
     Integer ownerId;
 

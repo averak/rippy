@@ -1,38 +1,39 @@
 package dev.abelab.rippy.api.request;
 
+import java.util.Date;
+
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import lombok.*;
 
 /**
- * ログインユーザ更新リクエスト
+ * イベント作成リクエスト
  */
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class LoginUserUpdateRequest {
+public class EventCreateRequest {
 
     /**
-     * メールアドレス
+     * イベント名
      */
     @NotNull
     @Size(max = 255)
-    String email;
+    String name;
 
     /**
-     * ファーストネーム
+     * イベント概要
      */
     @NotNull
-    @Size(max = 255)
-    String firstName;
+    @Size(max = 1000)
+    String description;
 
     /**
-     * ラストネーム
+     * イベント募集締め切り
      */
     @NotNull
-    @Size(max = 255)
-    String lastName;
+    Date expiredAt;
 
 }
