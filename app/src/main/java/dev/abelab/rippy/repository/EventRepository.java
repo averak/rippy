@@ -37,4 +37,17 @@ public class EventRepository {
         return this.eventMapper.insertSelective(event);
     }
 
+    /**
+     * オーナーIDからイベント一覧を検索
+     *
+     * @param ownerId オーナーID
+     *
+     * @return イベント一覧
+     */
+    public List<Event> selectByOwnerId(final int ownerId) {
+        final var eventExample = new EventExample();
+        eventExample.createCriteria().andOwnerIdEqualTo(ownerId);
+        return this.eventMapper.selectByExample(eventExample);
+    }
+
 }
