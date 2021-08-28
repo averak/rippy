@@ -61,6 +61,7 @@ public class EventRestController {
     @ApiResponses( //
         value = { //
                 @ApiResponse(code = 201, message = "作成成功"), //
+                @ApiResponse(code = 400, message = "無効な募集締め切り日時"), //
                 @ApiResponse(code = 401, message = "ユーザがログインしていない"), //
         } //
     )
