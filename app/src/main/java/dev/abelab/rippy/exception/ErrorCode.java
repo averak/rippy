@@ -25,6 +25,8 @@ public enum ErrorCode {
 
     NOT_FOUND_USER_ROLE(1102, "exception.not_found.user_role"),
 
+    NOT_FOUND_EVENT(1103, "exception.not_found.event"),
+
     /**
      * Conflict: 1200~1299
      */
@@ -44,7 +46,10 @@ public enum ErrorCode {
 
     TOO_SIMPLE_PASSWORD(1402, "exception.bad_request.too_simple_password"),
 
+    // FIXME: change name
     INVALID_EXPIRED_AT(1403, "exception.bad_request.invalid_expired_at"),
+
+    PAST_EVENT_CANNOT_BE_UPDATED(1404, "exception.bad_request.past_event_cannot_be_updated"),
 
     /**
      * Unauthorized: 1500~1599

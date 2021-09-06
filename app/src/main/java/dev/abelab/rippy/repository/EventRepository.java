@@ -1,6 +1,7 @@
 package dev.abelab.rippy.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
@@ -8,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import dev.abelab.rippy.db.entity.Event;
 import dev.abelab.rippy.db.entity.EventExample;
 import dev.abelab.rippy.db.mapper.EventMapper;
+import dev.abelab.rippy.exception.ErrorCode;
+import dev.abelab.rippy.exception.NotFoundException;
 
 @RequiredArgsConstructor
 @Repository
@@ -35,6 +38,28 @@ public class EventRepository {
      */
     public int insert(final Event event) {
         return this.eventMapper.insertSelective(event);
+    }
+
+    /**
+     * イベントを更新
+     *
+     * @param event イベント
+     */
+    public void update(final Event event) {
+        event.setUpdatedAt(null);
+        this.eventMapper.updateByPrimaryKeySelective(event);
+    }
+
+    /**
+     * IDからイベントを検索
+     *
+     * @param eventId イベントID
+     *
+     * @return イベント
+     */
+    public Event selectById(final int eventId) {
+        return Optional.ofNullable(this.eventMapper.selectByPrimaryKey(eventId)) //
+            .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND_EVENT));
     }
 
     /**
