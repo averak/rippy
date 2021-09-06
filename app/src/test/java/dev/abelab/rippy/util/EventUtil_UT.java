@@ -31,14 +31,11 @@ public class EventUtil_UT extends AbstractUtil_UT {
         @ParameterizedTest
         @MethodSource
         void 有効な募集締め切りかチェック(final Date expiredAt, final BaseException exception) {
-            // setup
-            final var event = EventSample.builder().expiredAt(expiredAt).build();
-
             // verify
             if (exception == null) {
-                assertDoesNotThrow(() -> EventUtil.validateExpiredAt(event));
+                assertDoesNotThrow(() -> EventUtil.validateExpiredAt(expiredAt));
             } else {
-                final var occurredException = assertThrows(exception.getClass(), () -> EventUtil.validateExpiredAt(event));
+                final var occurredException = assertThrows(exception.getClass(), () -> EventUtil.validateExpiredAt(expiredAt));
                 assertThat(occurredException.getErrorCode()).isEqualTo(exception.getErrorCode());
             }
         }

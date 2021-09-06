@@ -6,6 +6,7 @@ exception:
     api: "API does not exists."
     user: "User does not exists."
     user_role: "User role does not exists."
+    event: "Event does not exists."
   conflict:
     email: "Email already exists."
   forbidden:
@@ -15,6 +16,7 @@ exception:
     invalid_password_size: "Password size is invalid."
     too_simple_password: "Password is too simple."
     invalid_expired_at: "Expired date is invalid."
+    past_event_cannot_be_updated: "Past event cannot be updated."
   unauthorized:
     user_not_logged_in: "User has no logged in."
     wrong_password: "Password is wrong."
