@@ -10,6 +10,7 @@ import lombok.*;
 import dev.abelab.rippy.annotation.Authenticated;
 import dev.abelab.rippy.db.entity.User;
 import dev.abelab.rippy.api.request.EventCreateRequest;
+import dev.abelab.rippy.api.request.EventUpdateRequest;
 import dev.abelab.rippy.api.response.EventsResponse;
 import dev.abelab.rippy.service.EventService;
 
@@ -72,6 +73,36 @@ public class EventRestController {
         @Validated @ApiParam(name = "body", required = true, value = "新規イベント情報") @RequestBody final EventCreateRequest requestBody //
     ) {
         this.eventService.createEvent(requestBody, loginUser);
+    }
+
+    /**
+     * イベント更新API
+     *
+     * @param loginUser   ログインユーザ
+     *
+     * @param eventId     イベントID
+     *
+     * @param requestBody イベント更新リクエスト
+     */
+    @ApiOperation( //
+        value = "イベントの更新", //
+        notes = "イベントを更新する。" //
+    )
+    @ApiResponses( //
+        value = { //
+                @ApiResponse(code = 200, message = "更新成功"), //
+                @ApiResponse(code = 400, message = "無効な募集締め切り日時"), //
+                @ApiResponse(code = 401, message = "ユーザがログインしていない"), //
+        } //
+    )
+    @PostMapping(value = "/{event_id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void updateEvent( //
+        @ModelAttribute("LoginUser") final User loginUser, //
+        @ApiParam(name = "event_id", required = true, value = "イベントID") @PathVariable("event_id") final int eventId, //
+        @Validated @ApiParam(name = "body", required = true, value = "イベント更新情報") @RequestBody final EventUpdateRequest requestBody //
+    ) {
+        this.eventService.updateEvent(eventId, requestBody, loginUser);
     }
 
 }
