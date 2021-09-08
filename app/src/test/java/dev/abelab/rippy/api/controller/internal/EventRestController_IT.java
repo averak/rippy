@@ -48,6 +48,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 	static final String GET_EVENTS_PATH = BASE_PATH;
 	static final String CREATE_EVENT_PATH = BASE_PATH;
 	static final String UPDATE_EVENT_PATH = BASE_PATH + "/%s";
+	static final String DELETE_EVENT_PATH = BASE_PATH + "/%s";
 
 	@Autowired
 	ModelMapper modelMapper;
@@ -345,6 +346,87 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// test
 			final var request = postRequest(String.format(UPDATE_EVENT_PATH, SAMPLE_INT), requestBody);
+			request.header(HttpHeaders.AUTHORIZATION, "");
+			execute(request, new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN));
+		}
+
+	}
+
+	/**
+	 * イベント削除APIのテスト
+	 */
+	@Nested
+	@TestInstance(PER_CLASS)
+	class DeleteEventTest extends AbstractRestControllerInitialization_IT {
+
+		@ParameterizedTest
+		@MethodSource
+		void 正_イベントを削除(UserRoleEnum roleId) throws Exception {
+			// setup
+			final var loginUser = createLoginUser(roleId);
+			final var credentials = getLoginUserCredentials(loginUser);
+
+			final var event = EventSample.builder() //
+				.ownerId(loginUser.getId()) //
+				.expiredAt(DateTimeUtil.getTomorrow()) //
+				.build();
+			eventRepository.insert(event);
+
+			// test
+			final var request = deleteRequest(String.format(UPDATE_EVENT_PATH, event.getId()));
+			request.header(HttpHeaders.AUTHORIZATION, credentials);
+			execute(request, HttpStatus.OK);
+
+			// verify
+			final var events = eventRepository.selectByOwnerId(loginUser.getId());
+			assertThat(events.size()).isEqualTo(0);
+		}
+
+		Stream<Arguments> 正_イベントを削除() {
+			return Stream.of( //
+				// 管理者
+				arguments(UserRoleEnum.ADMIN), //
+				// メンバー
+				arguments(UserRoleEnum.MEMBER) //
+			);
+		}
+
+		@Test
+		void 異_イベントを削除する権限がない() throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.MEMBER);
+			final var credentials = getLoginUserCredentials(loginUser);
+
+			final var eventOwner = UserSample.builder().id(loginUser.getId() + 1).build();
+			userRepository.insert(eventOwner);
+			final var event = EventSample.builder() //
+				.ownerId(eventOwner.getId()) //
+				.expiredAt(DateTimeUtil.getTomorrow()) //
+				.build();
+			eventRepository.insert(event);
+
+			// test
+			final var request = deleteRequest(String.format(UPDATE_EVENT_PATH, event.getId()));
+			request.header(HttpHeaders.AUTHORIZATION, credentials);
+			execute(request, new ForbiddenException(ErrorCode.USER_HAS_NO_PERMISSION));
+		}
+
+		@Test
+		void 異_削除対象のイベントが存在しない() throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.MEMBER);
+			final var credentials = getLoginUserCredentials(loginUser);
+
+			// test
+			final var request = deleteRequest(String.format(UPDATE_EVENT_PATH, SAMPLE_INT));
+			request.header(HttpHeaders.AUTHORIZATION, credentials);
+			execute(request, new NotFoundException(ErrorCode.NOT_FOUND_EVENT));
+		}
+
+		@Test
+		void 異_無効な認証ヘッダ() throws Exception {
+			// test
+			final var request = deleteRequest(String.format(DELETE_EVENT_PATH, SAMPLE_INT));
 			request.header(HttpHeaders.AUTHORIZATION, "");
 			execute(request, new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN));
 		}
