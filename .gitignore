@@ -94,3 +94,7 @@ bin/
 
 ### Application property ###
 app/src/main/resources/application-prod.yml
+
+# MySQL
+mysql/db
+mysql/log

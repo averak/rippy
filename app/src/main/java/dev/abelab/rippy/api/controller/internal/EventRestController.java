@@ -93,6 +93,8 @@ public class EventRestController {
                 @ApiResponse(code = 200, message = "更新成功"), //
                 @ApiResponse(code = 400, message = "無効な募集締め切り日時"), //
                 @ApiResponse(code = 401, message = "ユーザがログインしていない"), //
+                @ApiResponse(code = 403, message = "イベントを更新する権限がない"), //
+                @ApiResponse(code = 404, message = "更新対象イベントが存在しない"), //
         } //
     )
     @PostMapping(value = "/{event_id}")
@@ -103,6 +105,34 @@ public class EventRestController {
         @Validated @ApiParam(name = "body", required = true, value = "イベント更新情報") @RequestBody final EventUpdateRequest requestBody //
     ) {
         this.eventService.updateEvent(eventId, requestBody, loginUser);
+    }
+
+    /**
+     * イベント削除API
+     *
+     * @param loginUser ログインユーザ
+     *
+     * @param eventId   イベントID
+     */
+    @ApiOperation( //
+        value = "イベントの削除", //
+        notes = "イベントを削除する。" //
+    )
+    @ApiResponses( //
+        value = { //
+                @ApiResponse(code = 200, message = "削除成功"), //
+                @ApiResponse(code = 401, message = "ユーザがログインしていない"), //
+                @ApiResponse(code = 403, message = "イベントを削除する権限がない"), //
+                @ApiResponse(code = 404, message = "削除対象イベントが存在しない"), //
+        } //
+    )
+    @DeleteMapping(value = "/{event_id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteEvent( //
+        @ModelAttribute("LoginUser") final User loginUser, //
+        @ApiParam(name = "event_id", required = true, value = "イベントID") @PathVariable("event_id") final int eventId //
+    ) {
+        this.eventService.deleteEvent(eventId, loginUser);
     }
 
 }

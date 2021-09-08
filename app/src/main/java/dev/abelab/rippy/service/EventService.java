@@ -81,15 +81,7 @@ public class EventService {
         final var event = this.eventRepository.selectById(eventId);
 
         // 更新可能かチェック
-        // 募集終了したイベント
-        final var now = new Date();
-        if (event.getExpiredAt().before(now)) {
-            throw new BadRequestException(ErrorCode.PAST_EVENT_CANNOT_BE_UPDATED);
-        }
-        // 管理者でもイベントオーナーでもない
-        if (loginUser.getRoleId() != UserRoleEnum.ADMIN.getId() && !event.getOwnerId().equals(loginUser.getId())) {
-            throw new ForbiddenException(ErrorCode.USER_HAS_NO_PERMISSION);
-        }
+        EventUtil.checkEditEventPermission(event, loginUser);
 
         // 募集締め切りのバリデーション
         EventUtil.validateExpiredAt(requestBody.getExpiredAt());
@@ -99,6 +91,25 @@ public class EventService {
         event.setDescription(requestBody.getDescription());
         event.setExpiredAt(requestBody.getExpiredAt());
         this.eventRepository.update(event);
+    }
+
+    /**
+     * イベントを削除
+     *
+     * @param eventId   イベントID
+     *
+     * @param loginUser ログインユーザ
+     */
+    @Transactional
+    public void deleteEvent(final int eventId, final User loginUser) {
+        // 更新対象イベントを取得
+        final var event = this.eventRepository.selectById(eventId);
+
+        // 削除権限をチェック
+        EventUtil.checkDeleteEventPermission(event, loginUser);
+
+        // イベントを削除
+        this.eventRepository.deleteById(eventId);
     }
 
 }
