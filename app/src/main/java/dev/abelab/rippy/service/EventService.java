@@ -101,4 +101,25 @@ public class EventService {
         this.eventRepository.update(event);
     }
 
+    /**
+     * イベントを削除
+     *
+     * @param eventId   イベントID
+     *
+     * @param loginUser ログインユーザ
+     */
+    @Transactional
+    public void deleteEvent(final int eventId, final User loginUser) {
+        // 更新対象イベントを取得
+        final var event = this.eventRepository.selectById(eventId);
+
+        // 削除権限をチェック
+        if (loginUser.getRoleId() != UserRoleEnum.ADMIN.getId() && !event.getOwnerId().equals(loginUser.getId())) {
+            throw new ForbiddenException(ErrorCode.USER_HAS_NO_PERMISSION);
+        }
+
+        // イベントを削除
+        this.eventRepository.deleteById(eventId);
+    }
+
 }

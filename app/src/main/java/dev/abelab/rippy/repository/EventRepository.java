@@ -51,6 +51,19 @@ public class EventRepository {
     }
 
     /**
+     * イベントを削除
+     *
+     * @param eventId イベントID
+     */
+    public void deleteById(final int eventId) {
+        if (this.existsById(eventId)) {
+            this.eventMapper.deleteByPrimaryKey(eventId);
+        } else {
+            throw new NotFoundException(ErrorCode.NOT_FOUND_EVENT);
+        }
+    }
+
+    /**
      * IDからイベントを検索
      *
      * @param eventId イベントID
@@ -73,6 +86,22 @@ public class EventRepository {
         final var eventExample = new EventExample();
         eventExample.createCriteria().andOwnerIdEqualTo(ownerId);
         return this.eventMapper.selectByExample(eventExample);
+    }
+
+    /**
+     * イベントIDの存在確認
+     *
+     * @param eventId イベントID
+     *
+     * @return イベントIDが存在するか
+     */
+    public boolean existsById(final int eventId) {
+        try {
+            this.selectById(eventId);
+            return true;
+        } catch (NotFoundException e) {
+            return false;
+        }
     }
 
 }
