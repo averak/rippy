@@ -48,7 +48,9 @@ public enum ErrorCode {
 
     INVALID_EXPIRED_AT(1403, "exception.bad_request.invalid_expired_at"),
 
-    PAST_EVENT_CANNOT_BE_UPDATED(1404, "exception.bad_request.past_event_cannot_be_updated"),
+    INVALID_EVENT_DATE(1404, "exception.bad_request.invalid_event_date"),
+
+    PAST_EVENT_CANNOT_BE_UPDATED(1405, "exception.bad_request.past_event_cannot_be_updated"),
 
     /**
      * Unauthorized: 1500~1599
