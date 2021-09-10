@@ -1,11 +1,13 @@
 package dev.abelab.rippy.api.request;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import lombok.*;
+import dev.abelab.rippy.model.EventDateModel;
 
 /**
  * イベント更新リクエスト
@@ -35,5 +37,11 @@ public class EventUpdateRequest {
      */
     @NotNull
     Date expiredAt;
+
+    /**
+     * イベント候補日リスト
+     */
+    @NotNull
+    List<EventDateModel> dates;
 
 }
