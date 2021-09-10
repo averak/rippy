@@ -18,7 +18,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import dev.abelab.rippy.db.entity.EventSample;
 import dev.abelab.rippy.db.entity.UserSample;
 import dev.abelab.rippy.enums.UserRoleEnum;
-import dev.abelab.rippy.util.DateTimeUtil;
 import dev.abelab.rippy.exception.ErrorCode;
 import dev.abelab.rippy.exception.BaseException;
 import dev.abelab.rippy.exception.ForbiddenException;
