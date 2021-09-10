@@ -9,12 +9,15 @@ import org.modelmapper.ModelMapper;
 import lombok.*;
 import dev.abelab.rippy.db.entity.User;
 import dev.abelab.rippy.db.entity.Event;
+import dev.abelab.rippy.db.entity.EventDate;
 import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.request.EventUpdateRequest;
 import dev.abelab.rippy.api.response.EventResponse;
 import dev.abelab.rippy.api.response.EventsResponse;
 import dev.abelab.rippy.repository.EventRepository;
+import dev.abelab.rippy.repository.EventDateRepository;
 import dev.abelab.rippy.util.EventUtil;
+import dev.abelab.rippy.util.EventDateUtil;
 
 @RequiredArgsConstructor
 @Service
@@ -23,6 +26,8 @@ public class EventService {
     private final ModelMapper modelMapper;
 
     private final EventRepository eventRepository;
+
+    private final EventDateRepository eventDateRepository;
 
     /**
      * イベント一覧を取得
@@ -59,6 +64,18 @@ public class EventService {
 
         // イベントの作成
         this.eventRepository.insert(event);
+
+        // 候補日リストの作成
+        final var eventDates = requestBody.getDates().stream().map(eventDateModel -> {
+            final var eventDate = this.modelMapper.map(eventDateModel, EventDate.class);
+            eventDate.setEventId(event.getId());
+
+            // 候補日のバリデーション
+            EventDateUtil.validateEventDate(event, eventDate);
+
+            return eventDate;
+        }).collect(Collectors.toList());
+        this.eventDateRepository.bulkInsert(eventDates);
     }
 
     /**
