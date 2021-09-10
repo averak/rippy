@@ -103,7 +103,21 @@ public class EventService {
         event.setDescription(requestBody.getDescription());
         event.setExpiredAt(requestBody.getExpiredAt());
         this.eventRepository.update(event);
-        // TODO: 候補日をbulkDelete
+
+        // 既存の候補日リストを削除
+        this.eventDateRepository.deleteByEventId(eventId);
+
+        // 候補日リストの作成
+        final var eventDates = requestBody.getDates().stream().map(eventDateModel -> {
+            final var eventDate = this.modelMapper.map(eventDateModel, EventDate.class);
+            eventDate.setEventId(event.getId());
+
+            // 候補日のバリデーション
+            EventDateUtil.validateEventDate(event, eventDate);
+
+            return eventDate;
+        }).collect(Collectors.toList());
+        this.eventDateRepository.bulkInsert(eventDates);
     }
 
     /**
