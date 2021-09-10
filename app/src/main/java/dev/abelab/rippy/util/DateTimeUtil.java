@@ -14,7 +14,7 @@ public class DateTimeUtil {
     /**
      * 今日の日時を取得
      *
-     * return 今日の日時
+     * @return 今日の日時
      */
     public static Date getToday() {
         final var calendar = Calendar.getInstance();
@@ -28,24 +28,44 @@ public class DateTimeUtil {
     /**
      * 翌日の日時を取得
      *
-     * return 翌日の日時
+     * @return 翌日の日時
      */
     public static Date getTomorrow() {
+        return DateTimeUtil.getDaysLater(1);
+    }
+
+    /**
+     * n日後の日時を取得
+     *
+     * @param n 加算する日数
+     *
+     * @return n日後の日時
+     */
+    public static Date getDaysLater(final int n) {
         final var calendar = Calendar.getInstance();
         calendar.setTime(getToday());
-        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        calendar.add(Calendar.DAY_OF_MONTH, n);
         return calendar.getTime();
     }
 
     /**
      * 昨日の日時を取得
      *
-     * return 翌日の日時
+     * @return 翌日の日時
      */
     public static Date getYesterday() {
+        return DateTimeUtil.getDaysLater(-1);
+    }
+
+    /**
+     * 翌週の日時を取得
+     *
+     * @return 翌週の日時
+     */
+    public static Date getNextWeek() {
         final var calendar = Calendar.getInstance();
         calendar.setTime(getToday());
-        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        calendar.add(Calendar.WEEK_OF_MONTH, 1);
         return calendar.getTime();
     }
 
