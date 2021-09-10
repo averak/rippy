@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -26,6 +27,7 @@ public class SwaggerConfig {
     public Docket dock() {
         return new Docket(DocumentationType.SWAGGER_2) //
             .useDefaultResponseMessages(false) //
+            .ignoredParameterTypes(ModelAttribute.class) //
             .protocols(Collections.singleton(this.rippyProperty.getProtocol())) //
             .host(this.rippyProperty.getHostname()) //
             .select() //
