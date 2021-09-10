@@ -31,6 +31,9 @@
 		<table tableName="event">
 			<generatedKey column="id" sqlStatement="JDBC" identity="true" />
 		</table>
+		<table tableName="event_date">
+			<generatedKey column="id" sqlStatement="JDBC" identity="true" />
+		</table>
 		<table tableName="event_answer">
 			<generatedKey column="id" sqlStatement="JDBC" identity="true" />
 		</table>
