@@ -78,4 +78,15 @@ public class EventDateRepository {
         }
     }
 
+    /**
+     * イベントIDから候補日を削除
+     *
+     * @param eventId イベントID
+     */
+    public void deleteByEventId(final int eventId) {
+        final var eventDateExample = new EventDateExample();
+        eventDateExample.createCriteria().andEventIdEqualTo(eventId);
+        this.eventDateMapper.deleteByExample(eventDateExample);
+    }
+
 }
