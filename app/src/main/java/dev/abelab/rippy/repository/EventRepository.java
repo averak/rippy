@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import lombok.RequiredArgsConstructor;
 import dev.abelab.rippy.db.entity.Event;
 import dev.abelab.rippy.db.entity.EventExample;
+import dev.abelab.rippy.db.entity.join.EventWithDates;
 import dev.abelab.rippy.db.mapper.EventMapper;
 import dev.abelab.rippy.exception.ErrorCode;
 import dev.abelab.rippy.exception.NotFoundException;
@@ -27,6 +28,15 @@ public class EventRepository {
         final var eventExample = new EventExample();
         eventExample.setOrderByClause("updated_at desc");
         return this.eventMapper.selectByExampleWithBLOBs(eventExample);
+    }
+
+    /**
+     * イベント（+候補日リスト）一覧を取得
+     *
+     * @return イベント（+候補日リスト）一覧
+     */
+    public List<EventWithDates> selectAllWithDates() {
+        return this.eventMapper.selectAllWithDates();
     }
 
     /**

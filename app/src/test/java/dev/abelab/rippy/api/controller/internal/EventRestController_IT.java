@@ -23,9 +23,12 @@ import org.modelmapper.ModelMapper;
 import dev.abelab.rippy.api.controller.AbstractRestController_IT;
 import dev.abelab.rippy.db.entity.UserSample;
 import dev.abelab.rippy.db.entity.EventSample;
+import dev.abelab.rippy.db.entity.EventDateSample;
 import dev.abelab.rippy.enums.UserRoleEnum;
+import dev.abelab.rippy.model.EventDateModel;
 import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.repository.EventRepository;
+import dev.abelab.rippy.repository.EventDateRepository;
 import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.request.EventUpdateRequest;
 import dev.abelab.rippy.api.response.EventResponse;
@@ -59,6 +62,9 @@ public class EventRestController_IT extends AbstractRestController_IT {
 	@Autowired
 	EventRepository eventRepository;
 
+	@Autowired
+	EventDateRepository eventDateRepository;
+
 	/**
 	 * イベント一覧取得APIのテスト
 	 */
@@ -79,6 +85,19 @@ public class EventRestController_IT extends AbstractRestController_IT {
 			);
 			events.stream().forEach(eventRepository::insert);
 
+			// 候補日リスト
+			final var eventDates1 = Arrays.asList( //
+				EventDateSample.builder().eventId(events.get(0).getId()).build(), //
+				EventDateSample.builder().eventId(events.get(0).getId()).build() //
+			);
+			final var eventDates2 = Arrays.asList( //
+				EventDateSample.builder().eventId(events.get(1).getId()).build(), //
+				EventDateSample.builder().eventId(events.get(1).getId()).build(), //
+				EventDateSample.builder().eventId(events.get(1).getId()).build() //
+			);
+			eventDateRepository.bulkInsert(eventDates1);
+			eventDateRepository.bulkInsert(eventDates2);
+
 			// test
 			final var request = getRequest(GET_EVENTS_PATH);
 			request.header(HttpHeaders.AUTHORIZATION, credentials);
@@ -91,6 +110,8 @@ public class EventRestController_IT extends AbstractRestController_IT {
 				.containsExactlyInAnyOrderElementsOf(
 					events.stream().map(event -> tuple(event.getId(), event.getName(), event.getDescription(), event.getOwnerId()))
 						.collect(Collectors.toList()));
+			assertThat(response.getEvents().get(0).getDates().size()).isEqualTo(eventDates1.size());
+			assertThat(response.getEvents().get(1).getDates().size()).isEqualTo(eventDates2.size());
 		}
 
 		Stream<Arguments> 正_イベント一覧を取得() {
@@ -132,16 +153,24 @@ public class EventRestController_IT extends AbstractRestController_IT {
 				.build();
 			final var requestBody = modelMapper.map(event, EventCreateRequest.class);
 
+			// 候補日リスト
+			final var eventDates = Arrays.asList( //
+				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
+				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
+			);
+			requestBody.setDates(eventDates);
+
 			// test
 			final var request = postRequest(CREATE_EVENT_PATH, requestBody);
 			request.header(HttpHeaders.AUTHORIZATION, credentials);
 			execute(request, HttpStatus.CREATED);
 
 			// verify
-			final var createdEvents = eventRepository.selectByOwnerId(loginUser.getId());
+			final var createdEvents = eventRepository.selectAllWithDates();
 			assertThat(createdEvents.size()).isEqualTo(1);
 			assertThat(createdEvents.get(0).getOwnerId()).isEqualTo(loginUser.getId());
 			assertThat(createdEvents.get(0).getExpiredAt()).isInSameMinuteAs(event.getExpiredAt());
+			assertThat(createdEvents.get(0).getDates().size()).isEqualTo(eventDates.size());
 		}
 
 		Stream<Arguments> 正_イベントを作成() {
@@ -166,6 +195,13 @@ public class EventRestController_IT extends AbstractRestController_IT {
 				.build();
 			final var requestBody = modelMapper.map(event, EventCreateRequest.class);
 
+			// 候補日リスト
+			final var eventDates = Arrays.asList( //
+				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
+				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
+			);
+			requestBody.setDates(eventDates);
+
 			// test
 			final var request = postRequest(CREATE_EVENT_PATH, requestBody);
 			request.header(HttpHeaders.AUTHORIZATION, credentials);
@@ -182,6 +218,42 @@ public class EventRestController_IT extends AbstractRestController_IT {
 				arguments(DateTimeUtil.getYesterday(), new BadRequestException(ErrorCode.INVALID_EXPIRED_AT)), //
 				// 未来の日時
 				arguments(DateTimeUtil.getTomorrow(), null) //
+			);
+		}
+
+		@ParameterizedTest
+		@MethodSource
+		void 異_無効な候補日は作成不可(final Date expiredAt, final Date startAt, final Date finishAt) throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.MEMBER);
+			final var credentials = getLoginUserCredentials(loginUser);
+
+			final var event = EventSample.builder() //
+				.ownerId(loginUser.getId()) //
+				.expiredAt(expiredAt) //
+				.build();
+			final var requestBody = modelMapper.map(event, EventCreateRequest.class);
+
+			// 候補日リスト
+			final var eventDates = Arrays.asList( //
+				EventDateModel.builder().startAt(startAt).finishAt(finishAt).build() //
+			);
+			requestBody.setDates(eventDates);
+
+			// test
+			final var request = postRequest(CREATE_EVENT_PATH, requestBody);
+			request.header(HttpHeaders.AUTHORIZATION, credentials);
+			execute(request, new BadRequestException(ErrorCode.INVALID_EVENT_DATE));
+		}
+
+		Stream<Arguments> 異_無効な候補日は作成不可() {
+			return Stream.of( //
+				// 過去の日時
+				arguments(DateTimeUtil.getTomorrow(), DateTimeUtil.getYesterday(), DateTimeUtil.getTomorrow()), //
+				// 開始・終了時刻の順序が逆
+				arguments(DateTimeUtil.getTomorrow(), DateTimeUtil.getDaysLater(3), DateTimeUtil.getDaysLater(2)), //
+				// 募集締め切り前
+				arguments(DateTimeUtil.getNextWeek(), DateTimeUtil.getDaysLater(3), DateTimeUtil.getDaysLater(2)) //
 			);
 		}
 
@@ -219,7 +291,22 @@ public class EventRestController_IT extends AbstractRestController_IT {
 				.build();
 			eventRepository.insert(event);
 
+			// 既存の候補日リスト
+			final var existsEventDates = Arrays.asList( //
+				EventDateSample.builder().eventId(event.getId()).build(), //
+				EventDateSample.builder().eventId(event.getId()).build(), //
+				EventDateSample.builder().eventId(event.getId()).build() //
+			);
+			eventDateRepository.bulkInsert(existsEventDates);
+
 			final var requestBody = modelMapper.map(event, EventUpdateRequest.class);
+
+			// 候補日リスト
+			final var eventDates = Arrays.asList( //
+				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
+				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
+			);
+			requestBody.setDates(eventDates);
 
 			// test
 			final var request = postRequest(String.format(UPDATE_EVENT_PATH, event.getId()), requestBody);
@@ -227,11 +314,11 @@ public class EventRestController_IT extends AbstractRestController_IT {
 			execute(request, HttpStatus.OK);
 
 			// verify
-			final var createdEvents = eventRepository.selectByOwnerId(loginUser.getId());
-			assertThat(createdEvents.size()).isEqualTo(1);
-			assertThat(createdEvents.get(0).getOwnerId()).isEqualTo(loginUser.getId());
-			assertThat(createdEvents.get(0).getExpiredAt()).isInSameMinuteAs(event.getExpiredAt());
-
+			final var updatedEvents = eventRepository.selectAllWithDates();
+			assertThat(updatedEvents.size()).isEqualTo(1);
+			assertThat(updatedEvents.get(0).getOwnerId()).isEqualTo(loginUser.getId());
+			assertThat(updatedEvents.get(0).getExpiredAt()).isInSameMinuteAs(event.getExpiredAt());
+			assertThat(updatedEvents.get(0).getDates().size()).isEqualTo(eventDates.size());
 		}
 
 		Stream<Arguments> 正_イベントを更新() {
@@ -258,6 +345,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 			eventRepository.insert(event);
 
 			final var requestBody = modelMapper.map(event, EventUpdateRequest.class);
+			requestBody.setDates(Arrays.asList());
 
 			// test
 			final var request = postRequest(String.format(UPDATE_EVENT_PATH, event.getId()), requestBody);
@@ -280,6 +368,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			event.setExpiredAt(expiredAt);
 			final var requestBody = modelMapper.map(event, EventUpdateRequest.class);
+			requestBody.setDates(Arrays.asList());
 
 			// test
 			final var request = postRequest(String.format(UPDATE_EVENT_PATH, event.getId()), requestBody);
@@ -311,6 +400,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 				.expiredAt(DateTimeUtil.getTomorrow()) //
 				.build();
 			final var requestBody = modelMapper.map(event, EventUpdateRequest.class);
+			requestBody.setDates(Arrays.asList());
 
 			// test
 			final var request = postRequest(String.format(UPDATE_EVENT_PATH, SAMPLE_INT), requestBody);
@@ -331,11 +421,50 @@ public class EventRestController_IT extends AbstractRestController_IT {
 			eventRepository.insert(event);
 
 			final var requestBody = modelMapper.map(event, EventUpdateRequest.class);
+			requestBody.setDates(Arrays.asList());
 
 			// test
 			final var request = postRequest(String.format(UPDATE_EVENT_PATH, event.getId()), requestBody);
 			request.header(HttpHeaders.AUTHORIZATION, credentials);
 			execute(request, new BadRequestException(ErrorCode.PAST_EVENT_CANNOT_BE_UPDATED));
+		}
+
+		@ParameterizedTest
+		@MethodSource
+		void 異_無効な候補日は更新不可(final Date expiredAt, final Date startAt, final Date finishAt) throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.MEMBER);
+			final var credentials = getLoginUserCredentials(loginUser);
+
+			final var event = EventSample.builder() //
+				.ownerId(loginUser.getId()) //
+				.expiredAt(expiredAt) //
+				.build();
+			eventRepository.insert(event);
+
+			final var requestBody = modelMapper.map(event, EventCreateRequest.class);
+
+			// 候補日リスト
+			final var eventDates = Arrays.asList( //
+				EventDateModel.builder().startAt(startAt).finishAt(finishAt).build() //
+			);
+			requestBody.setDates(eventDates);
+
+			// test
+			final var request = postRequest(String.format(UPDATE_EVENT_PATH, event.getId()), requestBody);
+			request.header(HttpHeaders.AUTHORIZATION, credentials);
+			execute(request, new BadRequestException(ErrorCode.INVALID_EVENT_DATE));
+		}
+
+		Stream<Arguments> 異_無効な候補日は更新不可() {
+			return Stream.of( //
+				// 過去の日時
+				arguments(DateTimeUtil.getTomorrow(), DateTimeUtil.getYesterday(), DateTimeUtil.getTomorrow()), //
+				// 開始・終了時刻の順序が逆
+				arguments(DateTimeUtil.getTomorrow(), DateTimeUtil.getDaysLater(3), DateTimeUtil.getDaysLater(2)), //
+				// 募集締め切り前
+				arguments(DateTimeUtil.getNextWeek(), DateTimeUtil.getDaysLater(3), DateTimeUtil.getDaysLater(2)) //
+			);
 		}
 
 		@Test
