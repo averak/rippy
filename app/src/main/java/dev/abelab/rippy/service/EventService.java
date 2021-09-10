@@ -1,6 +1,5 @@
 package dev.abelab.rippy.service;
 
-import java.util.Date;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -10,16 +9,12 @@ import org.modelmapper.ModelMapper;
 import lombok.*;
 import dev.abelab.rippy.db.entity.User;
 import dev.abelab.rippy.db.entity.Event;
-import dev.abelab.rippy.enums.UserRoleEnum;
 import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.request.EventUpdateRequest;
 import dev.abelab.rippy.api.response.EventResponse;
 import dev.abelab.rippy.api.response.EventsResponse;
 import dev.abelab.rippy.repository.EventRepository;
 import dev.abelab.rippy.util.EventUtil;
-import dev.abelab.rippy.exception.ErrorCode;
-import dev.abelab.rippy.exception.ForbiddenException;
-import dev.abelab.rippy.exception.BadRequestException;
 
 @RequiredArgsConstructor
 @Service
@@ -39,7 +34,7 @@ public class EventService {
     @Transactional
     public EventsResponse getEvents(final User loginUser) {
         // イベント一覧の取得
-        final var events = this.eventRepository.selectAll();
+        final var events = this.eventRepository.selectAllWithDates();
         final var eventResponses = events.stream() //
             .map(event -> this.modelMapper.map(event, EventResponse.class)) //
             .collect(Collectors.toList());
@@ -91,6 +86,7 @@ public class EventService {
         event.setDescription(requestBody.getDescription());
         event.setExpiredAt(requestBody.getExpiredAt());
         this.eventRepository.update(event);
+        // TODO: 候補日をbulkDelete
     }
 
     /**
