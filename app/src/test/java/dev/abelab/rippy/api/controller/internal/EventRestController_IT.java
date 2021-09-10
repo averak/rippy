@@ -23,9 +23,11 @@ import org.modelmapper.ModelMapper;
 import dev.abelab.rippy.api.controller.AbstractRestController_IT;
 import dev.abelab.rippy.db.entity.UserSample;
 import dev.abelab.rippy.db.entity.EventSample;
+import dev.abelab.rippy.db.entity.EventDateSample;
 import dev.abelab.rippy.enums.UserRoleEnum;
 import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.repository.EventRepository;
+import dev.abelab.rippy.repository.EventDateRepository;
 import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.request.EventUpdateRequest;
 import dev.abelab.rippy.api.response.EventResponse;
@@ -59,6 +61,9 @@ public class EventRestController_IT extends AbstractRestController_IT {
 	@Autowired
 	EventRepository eventRepository;
 
+	@Autowired
+	EventDateRepository eventDateRepository;
+
 	/**
 	 * イベント一覧取得APIのテスト
 	 */
@@ -79,6 +84,19 @@ public class EventRestController_IT extends AbstractRestController_IT {
 			);
 			events.stream().forEach(eventRepository::insert);
 
+			// イベントの候補日リスト
+			final var eventDates1 = Arrays.asList( //
+				EventDateSample.builder().eventId(events.get(0).getId()).build(), //
+				EventDateSample.builder().eventId(events.get(0).getId()).build() //
+			);
+			final var eventDates2 = Arrays.asList( //
+				EventDateSample.builder().eventId(events.get(1).getId()).build(), //
+				EventDateSample.builder().eventId(events.get(1).getId()).build(), //
+				EventDateSample.builder().eventId(events.get(1).getId()).build() //
+			);
+			eventDateRepository.bulkInsert(eventDates1);
+			eventDateRepository.bulkInsert(eventDates2);
+
 			// test
 			final var request = getRequest(GET_EVENTS_PATH);
 			request.header(HttpHeaders.AUTHORIZATION, credentials);
@@ -91,6 +109,8 @@ public class EventRestController_IT extends AbstractRestController_IT {
 				.containsExactlyInAnyOrderElementsOf(
 					events.stream().map(event -> tuple(event.getId(), event.getName(), event.getDescription(), event.getOwnerId()))
 						.collect(Collectors.toList()));
+			assertThat(response.getEvents().get(0).getDates().size()).isEqualTo(eventDates1.size());
+			assertThat(response.getEvents().get(1).getDates().size()).isEqualTo(eventDates2.size());
 		}
 
 		Stream<Arguments> 正_イベント一覧を取得() {
