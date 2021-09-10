@@ -37,9 +37,11 @@
 		<table tableName="event_answer">
 			<generatedKey column="id" sqlStatement="JDBC" identity="true" />
 		</table>
-		<table tableName="event_answer_date">
+		<table tableName="event_answer_date"></table>
+		<table tableName="tag">
 			<generatedKey column="id" sqlStatement="JDBC" identity="true" />
 		</table>
+		<table tableName="event_tagging"></table>
 
 	</context>
 </generatorConfiguration>

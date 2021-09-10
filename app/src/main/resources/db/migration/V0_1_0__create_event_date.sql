@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `event_date` (
   `start_at` DATETIME NOT NULL,
   `finish_at` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_event__date_event_id`
+  CONSTRAINT `fk_event_date_event_id`
     FOREIGN KEY (`event_id`)
     REFERENCES `event` (`id`)
     ON DELETE CASCADE
