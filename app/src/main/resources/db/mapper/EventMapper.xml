@@ -15,6 +15,7 @@
 
         ed.id as d_id,
         ed.event_id as d_event_id,
+        ed.date_order as d_date_order,
         ed.start_at as d_start_at,
         ed.finish_at as d_finish_at
 

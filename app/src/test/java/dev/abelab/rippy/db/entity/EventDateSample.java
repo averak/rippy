@@ -15,6 +15,7 @@ public class EventDateSample extends AbstractSample {
 
 		private Integer id = SAMPLE_INT;
 		private Integer eventId = SAMPLE_INT;
+		private Integer dateOrder = SAMPLE_INT;
 		private Date startAt = SAMPLE_DATE;
 		private Date finishAt = SAMPLE_DATE;
 
@@ -25,6 +26,11 @@ public class EventDateSample extends AbstractSample {
 
 		public EventDateSampleBuilder eventId(Integer eventId) {
 			this.eventId = eventId;
+			return this;
+		}
+
+		public EventDateSampleBuilder dateOrder(Integer dateOrder) {
+			this.dateOrder = dateOrder;
 			return this;
 		}
 
@@ -42,6 +48,7 @@ public class EventDateSample extends AbstractSample {
 			return EventDate.builder() //
 				.id(this.id) //
 				.eventId(this.eventId) //
+				.dateOrder(this.dateOrder) //
 				.startAt(this.startAt) //
 				.finishAt(this.finishAt) //
 				.build();
