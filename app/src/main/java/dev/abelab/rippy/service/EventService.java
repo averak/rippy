@@ -10,6 +10,7 @@ import lombok.*;
 import dev.abelab.rippy.db.entity.User;
 import dev.abelab.rippy.db.entity.Event;
 import dev.abelab.rippy.db.entity.EventDate;
+import dev.abelab.rippy.model.EventDateModel;
 import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.request.EventUpdateRequest;
 import dev.abelab.rippy.api.response.EventResponse;
@@ -62,6 +63,9 @@ public class EventService {
         // 募集締め切りのバリデーション
         EventUtil.validateExpiredAt(event.getExpiredAt());
 
+        // 候補日の順番が有効かチェック
+        EventDateUtil.checkDateOrdersValid(requestBody.getDates().stream().map(EventDateModel::getDateOrder).collect(Collectors.toList()));
+
         // イベントの作成
         this.eventRepository.insert(event);
 
@@ -97,6 +101,9 @@ public class EventService {
 
         // 募集締め切りのバリデーション
         EventUtil.validateExpiredAt(requestBody.getExpiredAt());
+
+        // 候補日の順番が有効かチェック
+        EventDateUtil.checkDateOrdersValid(requestBody.getDates().stream().map(EventDateModel::getDateOrder).collect(Collectors.toList()));
 
         // イベントを更新
         event.setName(requestBody.getName());

@@ -17,6 +17,7 @@ exception:
     too_simple_password: "Password is too simple."
     invalid_expired_at: "Expired date is invalid."
     invalid_event_date: "Event date is invalid."
+    invalid_event_date_orders: "Event date orders is invalid."
     past_event_cannot_be_updated: "Past event cannot be updated."
   unauthorized:
     user_not_logged_in: "User has no logged in."

@@ -315,6 +315,66 @@ public class EventDateExample {
             return (Criteria) this;
         }
 
+        public Criteria andDateOrderIsNull() {
+            addCriterion("date_order is null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDateOrderIsNotNull() {
+            addCriterion("date_order is not null");
+            return (Criteria) this;
+        }
+
+        public Criteria andDateOrderEqualTo(Integer value) {
+            addCriterion("date_order =", value, "dateOrder");
+            return (Criteria) this;
+        }
+
+        public Criteria andDateOrderNotEqualTo(Integer value) {
+            addCriterion("date_order <>", value, "dateOrder");
+            return (Criteria) this;
+        }
+
+        public Criteria andDateOrderGreaterThan(Integer value) {
+            addCriterion("date_order >", value, "dateOrder");
+            return (Criteria) this;
+        }
+
+        public Criteria andDateOrderGreaterThanOrEqualTo(Integer value) {
+            addCriterion("date_order >=", value, "dateOrder");
+            return (Criteria) this;
+        }
+
+        public Criteria andDateOrderLessThan(Integer value) {
+            addCriterion("date_order <", value, "dateOrder");
+            return (Criteria) this;
+        }
+
+        public Criteria andDateOrderLessThanOrEqualTo(Integer value) {
+            addCriterion("date_order <=", value, "dateOrder");
+            return (Criteria) this;
+        }
+
+        public Criteria andDateOrderIn(List<Integer> values) {
+            addCriterion("date_order in", values, "dateOrder");
+            return (Criteria) this;
+        }
+
+        public Criteria andDateOrderNotIn(List<Integer> values) {
+            addCriterion("date_order not in", values, "dateOrder");
+            return (Criteria) this;
+        }
+
+        public Criteria andDateOrderBetween(Integer value1, Integer value2) {
+            addCriterion("date_order between", value1, value2, "dateOrder");
+            return (Criteria) this;
+        }
+
+        public Criteria andDateOrderNotBetween(Integer value1, Integer value2) {
+            addCriterion("date_order not between", value1, value2, "dateOrder");
+            return (Criteria) this;
+        }
+
         public Criteria andStartAtIsNull() {
             addCriterion("start_at is null");
             return (Criteria) this;

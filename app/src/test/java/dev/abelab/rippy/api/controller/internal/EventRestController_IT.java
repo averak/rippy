@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Arrays;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
@@ -87,13 +88,13 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// 候補日リスト
 			final var eventDates1 = Arrays.asList( //
-				EventDateSample.builder().eventId(events.get(0).getId()).build(), //
-				EventDateSample.builder().eventId(events.get(0).getId()).build() //
+				EventDateSample.builder().eventId(events.get(0).getId()).dateOrder(1).build(), //
+				EventDateSample.builder().eventId(events.get(0).getId()).dateOrder(2).build() //
 			);
 			final var eventDates2 = Arrays.asList( //
-				EventDateSample.builder().eventId(events.get(1).getId()).build(), //
-				EventDateSample.builder().eventId(events.get(1).getId()).build(), //
-				EventDateSample.builder().eventId(events.get(1).getId()).build() //
+				EventDateSample.builder().eventId(events.get(1).getId()).dateOrder(1).build(), //
+				EventDateSample.builder().eventId(events.get(1).getId()).dateOrder(2).build(), //
+				EventDateSample.builder().eventId(events.get(1).getId()).dateOrder(3).build() //
 			);
 			eventDateRepository.bulkInsert(eventDates1);
 			eventDateRepository.bulkInsert(eventDates2);
@@ -155,8 +156,8 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// 候補日リスト
 			final var eventDates = Arrays.asList( //
-				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
-				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
+				EventDateModel.builder().dateOrder(1).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
+				EventDateModel.builder().dateOrder(2).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
 			);
 			requestBody.setDates(eventDates);
 
@@ -184,7 +185,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 		@ParameterizedTest
 		@MethodSource
-		void 有効な募集締め切りかチェック(final Date expiredAt, final BaseException exception) throws Exception {
+		void 募集締め切りが有効かチェック(final Date expiredAt, final BaseException exception) throws Exception {
 			// setup
 			final var loginUser = createLoginUser(UserRoleEnum.MEMBER);
 			final var credentials = getLoginUserCredentials(loginUser);
@@ -197,8 +198,8 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// 候補日リスト
 			final var eventDates = Arrays.asList( //
-				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
-				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
+				EventDateModel.builder().dateOrder(1).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
+				EventDateModel.builder().dateOrder(2).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
 			);
 			requestBody.setDates(eventDates);
 
@@ -212,7 +213,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 			}
 		}
 
-		Stream<Arguments> 有効な募集締め切りかチェック() {
+		Stream<Arguments> 募集締め切りが有効かチェック() {
 			return Stream.of( //
 				// 過去の日時
 				arguments(DateTimeUtil.getYesterday(), new BadRequestException(ErrorCode.INVALID_EXPIRED_AT)), //
@@ -236,7 +237,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// 候補日リスト
 			final var eventDates = Arrays.asList( //
-				EventDateModel.builder().startAt(startAt).finishAt(finishAt).build() //
+				EventDateModel.builder().dateOrder(1).startAt(startAt).finishAt(finishAt).build() //
 			);
 			requestBody.setDates(eventDates);
 
@@ -254,6 +255,48 @@ public class EventRestController_IT extends AbstractRestController_IT {
 				arguments(DateTimeUtil.getTomorrow(), DateTimeUtil.getDaysLater(3), DateTimeUtil.getDaysLater(2)), //
 				// 募集締め切り前
 				arguments(DateTimeUtil.getNextWeek(), DateTimeUtil.getDaysLater(3), DateTimeUtil.getDaysLater(2)) //
+			);
+		}
+
+		@ParameterizedTest
+		@MethodSource
+		void 候補日の順番が有効かチェック(final List<Integer> dateOrders, final BaseException exception) throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.MEMBER);
+			final var credentials = getLoginUserCredentials(loginUser);
+
+			final var event = EventSample.builder() //
+				.ownerId(loginUser.getId()) //
+				.expiredAt(DateTimeUtil.getTomorrow()) //
+				.build();
+			final var requestBody = modelMapper.map(event, EventCreateRequest.class);
+
+			// 候補日リスト
+			final var eventDates = dateOrders.stream().map(dateOrder -> EventDateModel.builder() //
+				.dateOrder(dateOrder).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build()) //
+				.collect(Collectors.toList());
+			requestBody.setDates(eventDates);
+
+			// test
+			final var request = postRequest(CREATE_EVENT_PATH, requestBody);
+			request.header(HttpHeaders.AUTHORIZATION, credentials);
+			if (exception == null) {
+				execute(request, HttpStatus.CREATED);
+			} else {
+				execute(request, exception);
+			}
+		}
+
+		Stream<Arguments> 候補日の順番が有効かチェック() {
+			return Stream.of( //
+				// 有効
+				arguments(Arrays.asList(1, 2, 3), null), //
+				// 1から始まっていない
+				arguments(Arrays.asList(2, 3, 4), new BadRequestException(ErrorCode.INVALID_EVENT_DATE_ORDERS)), //
+				// 数字が飛んでいる
+				arguments(Arrays.asList(1, 3, 4), new BadRequestException(ErrorCode.INVALID_EVENT_DATE_ORDERS)), //
+				// 数字に重複がある
+				arguments(Arrays.asList(1, 2, 2), new BadRequestException(ErrorCode.INVALID_EVENT_DATE_ORDERS)) //
 			);
 		}
 
@@ -293,9 +336,9 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// 既存の候補日リスト
 			final var existsEventDates = Arrays.asList( //
-				EventDateSample.builder().eventId(event.getId()).build(), //
-				EventDateSample.builder().eventId(event.getId()).build(), //
-				EventDateSample.builder().eventId(event.getId()).build() //
+				EventDateSample.builder().dateOrder(1).eventId(event.getId()).build(), //
+				EventDateSample.builder().dateOrder(2).eventId(event.getId()).build(), //
+				EventDateSample.builder().dateOrder(3).eventId(event.getId()).build() //
 			);
 			eventDateRepository.bulkInsert(existsEventDates);
 
@@ -303,8 +346,8 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// 候補日リスト
 			final var eventDates = Arrays.asList( //
-				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
-				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
+				EventDateModel.builder().dateOrder(1).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
+				EventDateModel.builder().dateOrder(2).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
 			);
 			requestBody.setDates(eventDates);
 
@@ -355,7 +398,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 		@ParameterizedTest
 		@MethodSource
-		void 有効な募集締め切りかチェック(final Date expiredAt, final BaseException exception) throws Exception {
+		void 募集締め切りが有効かチェック(final Date expiredAt, final BaseException exception) throws Exception {
 			// setup
 			final var loginUser = createLoginUser(UserRoleEnum.MEMBER);
 			final var credentials = getLoginUserCredentials(loginUser);
@@ -380,12 +423,56 @@ public class EventRestController_IT extends AbstractRestController_IT {
 			}
 		}
 
-		Stream<Arguments> 有効な募集締め切りかチェック() {
+		Stream<Arguments> 募集締め切りが有効かチェック() {
 			return Stream.of( //
 				// 過去の日時
 				arguments(DateTimeUtil.getYesterday(), new BadRequestException(ErrorCode.INVALID_EXPIRED_AT)), //
 				// 未来の日時
 				arguments(DateTimeUtil.getTomorrow(), null) //
+			);
+		}
+
+		@ParameterizedTest
+		@MethodSource
+		void 候補日の順番が有効かチェック(final List<Integer> dateOrders, final BaseException exception) throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.MEMBER);
+			final var credentials = getLoginUserCredentials(loginUser);
+
+			final var event = EventSample.builder() //
+				.ownerId(loginUser.getId()) //
+				.expiredAt(DateTimeUtil.getTomorrow()) //
+				.build();
+			eventRepository.insert(event);
+
+			final var requestBody = modelMapper.map(event, EventCreateRequest.class);
+
+			// 候補日リスト
+			final var eventDates = dateOrders.stream().map(dateOrder -> EventDateModel.builder() //
+				.dateOrder(dateOrder).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build()) //
+				.collect(Collectors.toList());
+			requestBody.setDates(eventDates);
+
+			// test
+			final var request = postRequest(CREATE_EVENT_PATH, requestBody);
+			request.header(HttpHeaders.AUTHORIZATION, credentials);
+			if (exception == null) {
+				execute(request, HttpStatus.CREATED);
+			} else {
+				execute(request, exception);
+			}
+		}
+
+		Stream<Arguments> 候補日の順番が有効かチェック() {
+			return Stream.of( //
+				// 有効
+				arguments(Arrays.asList(1, 2, 3), null), //
+				// 1から始まっていない
+				arguments(Arrays.asList(2, 3, 4), new BadRequestException(ErrorCode.INVALID_EVENT_DATE_ORDERS)), //
+				// 数字が飛んでいる
+				arguments(Arrays.asList(1, 3, 4), new BadRequestException(ErrorCode.INVALID_EVENT_DATE_ORDERS)), //
+				// 数字に重複がある
+				arguments(Arrays.asList(1, 2, 2), new BadRequestException(ErrorCode.INVALID_EVENT_DATE_ORDERS)) //
 			);
 		}
 
@@ -446,7 +533,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// 候補日リスト
 			final var eventDates = Arrays.asList( //
-				EventDateModel.builder().startAt(startAt).finishAt(finishAt).build() //
+				EventDateModel.builder().dateOrder(1).startAt(startAt).finishAt(finishAt).build() //
 			);
 			requestBody.setDates(eventDates);
 

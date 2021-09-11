@@ -2,6 +2,7 @@ package dev.abelab.rippy.model;
 
 import java.util.Date;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import lombok.*;
@@ -14,6 +15,13 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EventDateModel {
+
+    /**
+     * 候補日の順番
+     */
+    @Min(1)
+    @NotNull
+    Integer dateOrder;
 
     /**
      * 開始時間
