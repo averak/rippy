@@ -87,13 +87,13 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// 候補日リスト
 			final var eventDates1 = Arrays.asList( //
-				EventDateSample.builder().eventId(events.get(0).getId()).build(), //
-				EventDateSample.builder().eventId(events.get(0).getId()).build() //
+				EventDateSample.builder().eventId(events.get(0).getId()).dateOrder(1).build(), //
+				EventDateSample.builder().eventId(events.get(0).getId()).dateOrder(2).build() //
 			);
 			final var eventDates2 = Arrays.asList( //
-				EventDateSample.builder().eventId(events.get(1).getId()).build(), //
-				EventDateSample.builder().eventId(events.get(1).getId()).build(), //
-				EventDateSample.builder().eventId(events.get(1).getId()).build() //
+				EventDateSample.builder().eventId(events.get(1).getId()).dateOrder(1).build(), //
+				EventDateSample.builder().eventId(events.get(1).getId()).dateOrder(2).build(), //
+				EventDateSample.builder().eventId(events.get(1).getId()).dateOrder(3).build() //
 			);
 			eventDateRepository.bulkInsert(eventDates1);
 			eventDateRepository.bulkInsert(eventDates2);
@@ -155,8 +155,8 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// 候補日リスト
 			final var eventDates = Arrays.asList( //
-				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
-				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
+				EventDateModel.builder().dateOrder(1).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
+				EventDateModel.builder().dateOrder(2).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
 			);
 			requestBody.setDates(eventDates);
 
@@ -197,8 +197,8 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// 候補日リスト
 			final var eventDates = Arrays.asList( //
-				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
-				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
+				EventDateModel.builder().dateOrder(1).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
+				EventDateModel.builder().dateOrder(2).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
 			);
 			requestBody.setDates(eventDates);
 
@@ -293,9 +293,9 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// 既存の候補日リスト
 			final var existsEventDates = Arrays.asList( //
-				EventDateSample.builder().eventId(event.getId()).build(), //
-				EventDateSample.builder().eventId(event.getId()).build(), //
-				EventDateSample.builder().eventId(event.getId()).build() //
+				EventDateSample.builder().dateOrder(1).eventId(event.getId()).build(), //
+				EventDateSample.builder().dateOrder(2).eventId(event.getId()).build(), //
+				EventDateSample.builder().dateOrder(3).eventId(event.getId()).build() //
 			);
 			eventDateRepository.bulkInsert(existsEventDates);
 
@@ -303,8 +303,8 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// 候補日リスト
 			final var eventDates = Arrays.asList( //
-				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
-				EventDateModel.builder().startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
+				EventDateModel.builder().dateOrder(1).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build(), //
+				EventDateModel.builder().dateOrder(2).startAt(DateTimeUtil.getDaysLater(2)).finishAt(DateTimeUtil.getDaysLater(3)).build() //
 			);
 			requestBody.setDates(eventDates);
 
