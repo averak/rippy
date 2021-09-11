@@ -1,7 +1,7 @@
 package dev.abelab.rippy.api.response;
 
 import lombok.*;
-import dev.abelab.rippy.model.EventUserModel;
+import dev.abelab.rippy.model.EventOwnerModel;
 
 /**
  * イベント情報レスポンス
@@ -15,6 +15,6 @@ public class EventDetailResponse extends EventResponse {
     /**
      * イベントオーナー
      */
-    EventUserModel owner;
+    EventOwnerModel owner;
 
 }

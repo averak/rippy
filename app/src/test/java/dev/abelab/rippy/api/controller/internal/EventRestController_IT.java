@@ -29,6 +29,7 @@ import dev.abelab.rippy.db.entity.EventAnswerSample;
 import dev.abelab.rippy.db.entity.EventAnswerDateSample;
 import dev.abelab.rippy.enums.UserRoleEnum;
 import dev.abelab.rippy.model.EventDateModel;
+import dev.abelab.rippy.model.EventOwnerModel;
 import dev.abelab.rippy.model.EventUserModel;
 import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.repository.EventRepository;
@@ -708,9 +709,8 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 			// verify
 			assertThat(response.getOwner()) //
-				.extracting(EventUserModel::getId, EventUserModel::getFirstName, EventUserModel::getLastName,
-					EventUserModel::getAdmissionYear) //
-				.contains(loginUser.getId(), loginUser.getFirstName(), loginUser.getLastName(), loginUser.getAdmissionYear());
+				.extracting(EventOwnerModel::getFirstName, EventOwnerModel::getLastName) //
+				.contains(loginUser.getFirstName(), loginUser.getLastName());
 			assertThat(response.getDates().size()).isEqualTo(eventDates.size());
 			assertThat(response.getDates().get(0).getUsers().size()).isEqualTo(1);
 			assertThat(response.getDates().get(1).getUsers().size()).isEqualTo(0);
