@@ -4,10 +4,9 @@ import java.util.List;
 
 import lombok.*;
 import dev.abelab.rippy.db.entity.User;
-import dev.abelab.rippy.db.entity.EventAnswerDate;
 
 /**
- * ユーザ + 候補日回答リスト
+ * ユーザ + 候補日リスト
  */
 @Data
 @NoArgsConstructor
@@ -15,8 +14,8 @@ import dev.abelab.rippy.db.entity.EventAnswerDate;
 public class UserWithDates extends User {
 
     /**
-     * 候補日回答リスト
+     * 候補日リスト
      */
-    List<EventAnswerDate> answerDates;
+    List<EventDateWithAnswer> dates;
 
 }

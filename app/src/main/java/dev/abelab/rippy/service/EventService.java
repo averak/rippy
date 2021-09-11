@@ -180,20 +180,21 @@ public class EventService {
         eventDetailResponse.setOwner(this.modelMapper.map(owner, EventOwnerModel.class));
 
         // 回答者リストを取得
-        final var eventMembers = this.userRepository.selectWithDatesByEventId(event.getId()).stream().map(member -> {
-            final var eventMemberModel = this.modelMapper.map(member, EventMemberModel.class);
+        final var eventMembers = this.userRepository.selectWithDatesByEventId(event.getId()).stream() //
+            .map(member -> {
+                final var eventMemberModel = this.modelMapper.map(member, EventMemberModel.class);
 
-            // 参加可能日のみ抽出
-            final var availableDates = member.getAnswerDates().stream() //
-                .filter(answerDate -> answerDate.getIsPossible()) //
-                .map(answerDate -> {
-                    final var eventDate = this.eventDateRepository.selectById(answerDate.getDateId());
-                    return this.modelMapper.map(eventDate, EventDateModel.class);
-                }).collect(Collectors.toList());
-            eventMemberModel.setAvailableDates(availableDates);
+                // 参加可能日のみ抽出
+                eventMemberModel.setAvailableDates( //
+                    member.getDates().stream() //
+                        .filter(date -> date.getAnswer().getIsPossible()) //
+                        .map(date -> this.modelMapper.map(date, EventDateModel.class)) //
+                        .collect(Collectors.toList()) //
+                );
 
-            return eventMemberModel;
-        }).collect(Collectors.toList());
+                return eventMemberModel;
+            }) //
+            .collect(Collectors.toList());
         eventDetailResponse.setMembers(eventMembers);
 
         return eventDetailResponse;

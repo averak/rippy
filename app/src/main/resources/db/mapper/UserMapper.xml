@@ -2,24 +2,34 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="dev.abelab.rippy.db.mapper.UserMapper">
     <resultMap id="BaseResultMap" type="dev.abelab.rippy.db.entity.User" extends="dev.abelab.rippy.db.mapper.base.UserBaseMapper.BaseResultMap"></resultMap>
+    <resultMap id="BaseEventDateResultMap" type="dev.abelab.rippy.db.entity.EventDate" extends="dev.abelab.rippy.db.mapper.base.EventDateBaseMapper.BaseResultMap"></resultMap>
     <resultMap id="BaseEventAnswerDateResultMap" type="dev.abelab.rippy.db.entity.EventAnswerDate" extends="dev.abelab.rippy.db.mapper.base.EventAnswerDateBaseMapper.BaseResultMap"></resultMap>
 
+    <resultMap id="EventDateWithAnswerResultMap" type="dev.abelab.rippy.db.entity.join.EventDateWithAnswer" extends="BaseEventDateResultMap">
+        <association property="answer" resultMap="BaseEventAnswerDateResultMap" columnPrefix="ead_"></association>
+    </resultMap>
     <resultMap id="UserWithDatesResultMap" type="dev.abelab.rippy.db.entity.join.UserWithDates" extends="BaseResultMap">
-        <collection property="answerDates" ofType="dev.abelab.rippy.db.entity.EventAnswerDate" resultMap="BaseEventAnswerDateResultMap" columnPrefix="d_"></collection>
+        <collection property="dates" ofType="dev.abelab.rippy.db.entity.join.EventDateWithAnswer" resultMap="EventDateWithAnswerResultMap" columnPrefix="ed_"></collection>
     </resultMap>
 
-    <select id="selectWithDatesByEventId" resultMap="UserWithDatesResultMap">
+    <select id="selectWithDatesByEventId" parameterType="java.lang.Integer" resultMap="UserWithDatesResultMap">
         select
 
         user.*,
 
-        ead.answer_id as d_answer_id,
-        ead.date_id as d_date_id,
-        ead.is_possible as d_is_possible
+        ed.id as ed_id,
+        ed.event_id as ed_event_id,
+        ed.date_order as ed_date_order,
+        ed.start_at as ed_start_at,
+        ed.finish_at as ed_finish_at,
+
+        ead.answer_id as ed_ead_answer_id,
+        ead.date_id as ed_ead_date_id,
+        ead.is_possible as ed_ead_is_possible
 
         from user
-        left join event_answer ea on ea.event_id = #{event_id} and ea.user_id = user.id
-        left join event_answer_date ead on ea.id = ead.answer_id
+        left join event_date ed on ed.event_id = #{event_id}
+        left join event_answer_date ead on ed.id = ead.date_id
     </select>
 
 </mapper>

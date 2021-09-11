@@ -683,7 +683,8 @@ public class EventRestController_IT extends AbstractRestController_IT {
 			// 候補日リスト
 			final var eventDates = Arrays.asList( //
 				EventDateSample.builder().eventId(event.getId()).dateOrder(1).build(), //
-				EventDateSample.builder().eventId(event.getId()).dateOrder(2).build() //
+				EventDateSample.builder().eventId(event.getId()).dateOrder(2).build(), //
+				EventDateSample.builder().eventId(event.getId()).dateOrder(3).build() //
 			);
 			eventDateRepository.bulkInsert(eventDates);
 
@@ -697,7 +698,9 @@ public class EventRestController_IT extends AbstractRestController_IT {
 			final var eventAnswerDates = Arrays.asList( //
 				EventAnswerDateSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(0).getId()).isPossible(true)
 					.build(), //
-				EventAnswerDateSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(1).getId()).isPossible(false)
+				EventAnswerDateSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(1).getId()).isPossible(true)
+					.build(), //
+				EventAnswerDateSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(2).getId()).isPossible(false)
 					.build() //
 			);
 			eventAnswerDates.stream().forEach(eventAnswerDateRepository::insert);
@@ -713,7 +716,16 @@ public class EventRestController_IT extends AbstractRestController_IT {
 				.contains(loginUser.getFirstName(), loginUser.getLastName());
 			assertThat(response.getDates().size()).isEqualTo(eventDates.size());
 			assertThat(response.getMembers().size()).isEqualTo(1);
-			assertThat(response.getMembers().get(0).getAvailableDates().size()).isEqualTo(1);
+			assertThat(response.getMembers()) //
+				.extracting(EventMemberModel::getId, EventMemberModel::getFirstName, EventMemberModel::getLastName,
+					EventMemberModel::getAdmissionYear) //
+				.containsExactly( //
+					tuple(loginUser.getId(), loginUser.getFirstName(), loginUser.getLastName(), loginUser.getAdmissionYear()) //
+				);
+			assertThat(response.getMembers().get(0).getAvailableDates().size()).isEqualTo(2);
+			assertThat(response.getMembers().get(0).getAvailableDates()) //
+				.extracting(EventDateModel::getDateOrder) //
+				.containsExactlyInAnyOrder(1, 2);
 		}
 
 		Stream<Arguments> 正_イベント詳細を取得() {
@@ -740,7 +752,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 		@Test
 		void 異_無効な認証ヘッダ() throws Exception {
 			// test
-			final var request = getRequest(GET_EVENTS_PATH);
+			final var request = getRequest(String.format(GET_EVENT_PATH, SAMPLE_INT));
 			request.header(HttpHeaders.AUTHORIZATION, "");
 			execute(request, new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN));
 		}
