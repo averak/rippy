@@ -5,7 +5,7 @@ import dev.abelab.rippy.db.entity.EventAnswer;
 import dev.abelab.rippy.db.entity.User;
 
 /**
- * イベント回答 + ユーザ
+ * イベント回答 + 回答者
  */
 @Data
 @NoArgsConstructor

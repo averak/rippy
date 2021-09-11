@@ -9,6 +9,7 @@ import dev.abelab.rippy.db.entity.EventAnswer;
 import dev.abelab.rippy.db.entity.EventAnswerExample;
 import dev.abelab.rippy.db.entity.join.EventAnswerWithUser;
 import dev.abelab.rippy.db.entity.join.EventAnswerWithDates;
+import dev.abelab.rippy.db.entity.join.EventAnswerWithUserAndDates;
 import dev.abelab.rippy.db.mapper.EventAnswerMapper;
 
 @RequiredArgsConstructor
@@ -50,6 +51,17 @@ public class EventAnswerRepository {
      */
     public List<EventAnswerWithDates> selectWithDatesByEventId(final int eventId) {
         return this.eventAnswerMapper.selectWithDatesByEventId(eventId);
+    }
+
+    /**
+     * イベントIDからイベント回答リスト（+回答者+候補日回答リスト）を取得
+     *
+     * @param eventId イベントID
+     *
+     * @return イベント回答（+回答者+候補日回答リスト）リスト
+     */
+    public List<EventAnswerWithUserAndDates> selectWithUserAndDatesByEventId(final int eventId) {
+        return this.eventAnswerMapper.selectWithUserAndDatesByEventId(eventId);
     }
 
     /**
