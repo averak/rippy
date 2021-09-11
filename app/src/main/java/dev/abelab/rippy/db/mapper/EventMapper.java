@@ -9,6 +9,6 @@ public interface EventMapper extends EventBaseMapper {
 
     List<EventWithDates> selectAllWithDates();
 
-    EventWithDates selectWithDatesById(final int dd);
+    EventWithDates selectWithDatesById(final int id);
 
 }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dev.abelab.rippy.db.mapper.EventAnswerMapper">
+    <resultMap id="BaseResultMap" type="dev.abelab.rippy.db.entity.EventAnswer" extends="dev.abelab.rippy.db.mapper.base.EventAnswerBaseMapper.ResultMapWithBLOBs"></resultMap>
+    <resultMap id="BaseEventAnswerDateResultMap" type="dev.abelab.rippy.db.entity.EventAnswerDate" extends="dev.abelab.rippy.db.mapper.base.EventAnswerDateBaseMapper.BaseResultMap"></resultMap>
+
+    <resultMap id="EventAnswerWithDatesResultMap" type="dev.abelab.rippy.db.entity.join.EventAnswerWithDates" extends="BaseResultMap">
+        <collection property="dates" ofType="dev.abelab.rippy.db.entity.EventAnswerDate" resultMap="BaseEventAnswerDateResultMap" columnPrefix="d_"></collection>
+    </resultMap>
+
+    <select id="selectWithDatesByEventId" parameterType="java.lang.Integer" resultMap="EventAnswerWithDatesResultMap">
+        select
+
+        ea.*,
+
+        ed.answer_id as d_answer_id,
+        ed.date_id as d_date_id,
+        ed.is_possible as d_is_possible
+
+        from event_answer ea
+        left join event_answer_date ed on ea.id = ed.answer_id
+        where ea.id = #{eventId}
+    </select>
+
+</mapper>
