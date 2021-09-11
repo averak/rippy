@@ -42,6 +42,11 @@ public class EventDateUtil {
      * @param dateOrders 候補日の順番リスト
      */
     public static void checkDateOrdersValid(List<Integer> dateOrders) {
+        final var validDateOrders = IntStream.rangeClosed(1, dateOrders.size()).boxed().collect(Collectors.toList());
+
+        if (!dateOrders.equals(validDateOrders)) {
+            throw new BadRequestException(ErrorCode.INVALID_EVENT_DATE_ORDERS);
+        }
     }
 
 }
