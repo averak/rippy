@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import lombok.RequiredArgsConstructor;
 import dev.abelab.rippy.db.entity.EventAnswer;
 import dev.abelab.rippy.db.entity.EventAnswerExample;
+import dev.abelab.rippy.db.entity.join.EventAnswerWithUser;
 import dev.abelab.rippy.db.entity.join.EventAnswerWithDates;
 import dev.abelab.rippy.db.mapper.EventAnswerMapper;
 
@@ -27,6 +28,17 @@ public class EventAnswerRepository {
         final var example = new EventAnswerExample();
         example.createCriteria().andEventIdEqualTo(eventId);
         return this.eventAnswerMapper.selectByExample(example);
+    }
+
+    /**
+     * イベントIDからイベント回答リスト（+回答者）を取得
+     *
+     * @param eventId イベントID
+     *
+     * @return イベント回答（+回答者）リスト
+     */
+    public List<EventAnswerWithUser> selectWithUserByEventId(final int eventId) {
+        return this.eventAnswerMapper.selectWithUserByEventId(eventId);
     }
 
     /**
