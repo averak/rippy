@@ -36,6 +36,6 @@ public class EventMemberModel {
     /**
      * 参加可能日リスト
      */
-    List<EventDateModel> dates;
+    List<EventDateModel> availableDates;
 
 }

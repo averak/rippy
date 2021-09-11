@@ -12,6 +12,7 @@ import dev.abelab.rippy.db.entity.User;
 import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.request.EventUpdateRequest;
 import dev.abelab.rippy.api.response.EventsResponse;
+import dev.abelab.rippy.api.response.EventDetailResponse;
 import dev.abelab.rippy.service.EventService;
 
 @Api(tags = "Event")
@@ -133,6 +134,33 @@ public class EventRestController {
         @ApiParam(name = "event_id", required = true, value = "イベントID") @PathVariable("event_id") final int eventId //
     ) {
         this.eventService.deleteEvent(eventId, loginUser);
+    }
+
+    /**
+     * イベント詳細取得API
+     *
+     * @param loginUser ログインユーザ
+     *
+     * @param eventId   イベントID
+     */
+    @ApiOperation( //
+        value = "イベント詳細の取得", //
+        notes = "イベント詳細を取得する。" //
+    )
+    @ApiResponses( //
+        value = { //
+                @ApiResponse(code = 200, message = "取得成功"), //
+                @ApiResponse(code = 401, message = "ユーザがログインしていない"), //
+                @ApiResponse(code = 404, message = "取得対象イベントが存在しない"), //
+        } //
+    )
+    @GetMapping(value = "/{event_id}")
+    @ResponseStatus(HttpStatus.OK)
+    public EventDetailResponse getEventDetali( //
+        @ModelAttribute("LoginUser") final User loginUser, //
+        @ApiParam(name = "event_id", required = true, value = "イベントID") @PathVariable("event_id") final int eventId //
+    ) {
+        return this.eventService.getEventDetail(eventId, loginUser);
     }
 
 }

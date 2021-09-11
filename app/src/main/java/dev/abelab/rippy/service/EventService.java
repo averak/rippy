@@ -1,5 +1,6 @@
 package dev.abelab.rippy.service;
 
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -11,12 +12,18 @@ import dev.abelab.rippy.db.entity.User;
 import dev.abelab.rippy.db.entity.Event;
 import dev.abelab.rippy.db.entity.EventDate;
 import dev.abelab.rippy.model.EventDateModel;
+import dev.abelab.rippy.model.EventOwnerModel;
+import dev.abelab.rippy.model.EventMemberModel;
 import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.request.EventUpdateRequest;
 import dev.abelab.rippy.api.response.EventResponse;
 import dev.abelab.rippy.api.response.EventsResponse;
+import dev.abelab.rippy.api.response.EventDetailResponse;
+import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.repository.EventRepository;
 import dev.abelab.rippy.repository.EventDateRepository;
+import dev.abelab.rippy.repository.EventAnswerRepository;
+import dev.abelab.rippy.repository.EventAnswerDateRepository;
 import dev.abelab.rippy.util.EventUtil;
 import dev.abelab.rippy.util.EventDateUtil;
 
@@ -26,9 +33,15 @@ public class EventService {
 
     private final ModelMapper modelMapper;
 
+    private final UserRepository userRepository;
+
     private final EventRepository eventRepository;
 
     private final EventDateRepository eventDateRepository;
+
+    private final EventAnswerRepository eventAnswerRepository;
+
+    private final EventAnswerDateRepository eventAnswerDateRepository;
 
     /**
      * イベント一覧を取得
@@ -144,6 +157,46 @@ public class EventService {
 
         // イベントを削除
         this.eventRepository.deleteById(eventId);
+    }
+
+    /**
+     * イベント詳細を取得
+     *
+     * @param eventId   イベントID
+     *
+     * @param loginUser ログインユーザ
+     *
+     * @return イベント詳細レスポンス
+     */
+    @Transactional
+    public EventDetailResponse getEventDetail(final int eventId, final User loginUser) {
+        // 取得対象イベントを取得
+        final var event = this.eventRepository.selectWithDatesById(eventId);
+
+        // イベントオーナーを取得
+        final var owner = this.userRepository.selectById(event.getOwnerId());
+
+        final var eventDetailResponse = this.modelMapper.map(event, EventDetailResponse.class);
+        eventDetailResponse.setOwner(this.modelMapper.map(owner, EventOwnerModel.class));
+
+        // 回答者リストを取得
+        final var eventMembers = this.userRepository.selectWithDatesByEventId(event.getId()).stream().map(member -> {
+            final var eventMemberModel = this.modelMapper.map(member, EventMemberModel.class);
+
+            // 参加可能日のみ抽出
+            final var availableDates = member.getAnswerDates().stream() //
+                .filter(answerDate -> answerDate.getIsPossible()) //
+                .map(answerDate -> {
+                    final var eventDate = this.eventDateRepository.selectById(answerDate.getDateId());
+                    return this.modelMapper.map(eventDate, EventDateModel.class);
+                }).collect(Collectors.toList());
+            eventMemberModel.setAvailableDates(availableDates);
+
+            return eventMemberModel;
+        }).collect(Collectors.toList());
+        eventDetailResponse.setMembers(eventMembers);
+
+        return eventDetailResponse;
     }
 
 }

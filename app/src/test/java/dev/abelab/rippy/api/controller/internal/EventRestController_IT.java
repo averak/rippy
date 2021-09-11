@@ -713,7 +713,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 				.contains(loginUser.getFirstName(), loginUser.getLastName());
 			assertThat(response.getDates().size()).isEqualTo(eventDates.size());
 			assertThat(response.getMembers().size()).isEqualTo(1);
-			assertThat(response.getMembers().get(0).getDates().size()).isEqualTo(1);
+			assertThat(response.getMembers().get(0).getAvailableDates().size()).isEqualTo(1);
 		}
 
 		Stream<Arguments> 正_イベント詳細を取得() {
