@@ -74,7 +74,7 @@ public class EventRepository {
     }
 
     /**
-     * IDからイベントを検索
+     * IDからイベントを取得
      *
      * @param eventId イベントID
      *
@@ -82,6 +82,18 @@ public class EventRepository {
      */
     public Event selectById(final int eventId) {
         return Optional.ofNullable(this.eventMapper.selectByPrimaryKey(eventId)) //
+            .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND_EVENT));
+    }
+
+    /**
+     * IDからイベント（+候補日リスト）を取得
+     *
+     * @param eventId イベントID
+     *
+     * @return イベント（+候補日リスト）
+     */
+    public EventWithDates selectWithDatesById(final int eventId) {
+        return Optional.ofNullable(this.eventMapper.selectWithDatesById(eventId)) //
             .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND_EVENT));
     }
 
