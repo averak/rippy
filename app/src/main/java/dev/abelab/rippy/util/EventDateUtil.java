@@ -1,6 +1,9 @@
 package dev.abelab.rippy.util;
 
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import dev.abelab.rippy.db.entity.Event;
 import dev.abelab.rippy.db.entity.EventDate;
@@ -31,6 +34,14 @@ public class EventDateUtil {
         if (eventDate.getFinishAt().before(eventDate.getStartAt())) {
             throw new BadRequestException(ErrorCode.INVALID_EVENT_DATE);
         }
+    }
+
+    /**
+     * 候補日の順番が有効かチェック
+     *
+     * @param dateOrders 候補日の順番リスト
+     */
+    public static void checkDateOrdersValid(List<Integer> dateOrders) {
     }
 
 }

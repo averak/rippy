@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.*;
 import static org.junit.jupiter.params.provider.Arguments.*;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Nested;
@@ -18,6 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import dev.abelab.rippy.db.entity.EventSample;
 import dev.abelab.rippy.db.entity.EventDateSample;
 import dev.abelab.rippy.exception.ErrorCode;
+import dev.abelab.rippy.exception.BaseException;
 import dev.abelab.rippy.exception.BadRequestException;
 
 public class EventDateUtil_UT extends AbstractUtil_UT {
@@ -68,6 +71,38 @@ public class EventDateUtil_UT extends AbstractUtil_UT {
             );
         }
 
+    }
+
+    /**
+     * Test for check date orders valid
+     */
+    @Nested
+    @TestInstance(PER_CLASS)
+    class CheckDateOrdersValidTest {
+
+        @ParameterizedTest
+        @MethodSource
+        void 候補日の順番が有効かチェック(final List<Integer> dateOrders, final BaseException exception) {
+            if (exception == null) {
+                assertDoesNotThrow(() -> EventDateUtil.checkDateOrdersValid(dateOrders));
+            } else {
+                final var occurredException = assertThrows(exception.getClass(), () -> EventDateUtil.checkDateOrdersValid(dateOrders));
+                assertThat(occurredException.getErrorCode()).isEqualTo(exception.getErrorCode());
+            }
+        }
+
+        Stream<Arguments> 候補日の順番が有効かチェック() {
+            return Stream.of( //
+                // 有効
+                arguments(Arrays.asList(1, 2, 3), null), //
+                // 1から始まっていない
+                arguments(Arrays.asList(2, 3, 4), new BadRequestException(ErrorCode.INVALID_EVENT_DATE_ORDERS)), //
+                // 数字が飛んでいる
+                arguments(Arrays.asList(1, 3, 4), new BadRequestException(ErrorCode.INVALID_EVENT_DATE_ORDERS)), //
+                // 数字に重複がある
+                arguments(Arrays.asList(1, 2, 2), new BadRequestException(ErrorCode.INVALID_EVENT_DATE_ORDERS)) //
+            );
+        }
     }
 
 }
