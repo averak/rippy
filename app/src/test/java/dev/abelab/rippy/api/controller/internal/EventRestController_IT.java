@@ -30,7 +30,7 @@ import dev.abelab.rippy.db.entity.EventAnswerDateSample;
 import dev.abelab.rippy.enums.UserRoleEnum;
 import dev.abelab.rippy.model.EventDateModel;
 import dev.abelab.rippy.model.EventOwnerModel;
-import dev.abelab.rippy.model.EventUserModel;
+import dev.abelab.rippy.model.EventMemberModel;
 import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.repository.EventRepository;
 import dev.abelab.rippy.repository.EventDateRepository;
@@ -712,8 +712,8 @@ public class EventRestController_IT extends AbstractRestController_IT {
 				.extracting(EventOwnerModel::getFirstName, EventOwnerModel::getLastName) //
 				.contains(loginUser.getFirstName(), loginUser.getLastName());
 			assertThat(response.getDates().size()).isEqualTo(eventDates.size());
-			assertThat(response.getDates().get(0).getUsers().size()).isEqualTo(1);
-			assertThat(response.getDates().get(1).getUsers().size()).isEqualTo(0);
+			assertThat(response.getMembers().size()).isEqualTo(1);
+			assertThat(response.getMembers().get(0).getDates().size()).isEqualTo(1);
 		}
 
 		Stream<Arguments> 正_イベント詳細を取得() {

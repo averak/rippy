@@ -1,7 +1,6 @@
 package dev.abelab.rippy.model;
 
 import java.util.Date;
-import java.util.List;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -35,11 +34,5 @@ public class EventDateModel {
      */
     @NotNull
     Date finishAt;
-
-    /**
-     * 参加可能者リスト
-     */
-    @NotNull
-    List<EventUserModel> users;
 
 }
