@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="dev.abelab.rippy.db.mapper.EventAnswerMapper">
+    <resultMap id="BaseResultMap" type="dev.abelab.rippy.db.entity.EventAnswer" extends="dev.abelab.rippy.db.mapper.base.EventAnswerBaseMapper.ResultMapWithBLOBs"></resultMap>
+    <resultMap id="BaseUserResultMap" type="dev.abelab.rippy.db.entity.User" extends="dev.abelab.rippy.db.mapper.base.UserBaseMapper.BaseResultMap"></resultMap>
+    <resultMap id="BaseEventAnswerDateResultMap" type="dev.abelab.rippy.db.entity.EventAnswerDate" extends="dev.abelab.rippy.db.mapper.base.EventAnswerDateBaseMapper.BaseResultMap"></resultMap>
+
+    <resultMap id="EventAnswerWithUserResultMap" type="dev.abelab.rippy.db.entity.join.EventAnswerWithUser" extends="BaseResultMap">
+        <association property="user" resultMap="BaseUserResultMap" columnPrefix="user_"></association>
+    </resultMap>
+    <resultMap id="EventAnswerWithDatesResultMap" type="dev.abelab.rippy.db.entity.join.EventAnswerWithDates" extends="BaseResultMap">
+        <collection property="dates" ofType="dev.abelab.rippy.db.entity.EventAnswerDate" resultMap="BaseEventAnswerDateResultMap" columnPrefix="d_"></collection>
+    </resultMap>
+    <resultMap id="EventAnswerWithUserAndDatesResultMap" type="dev.abelab.rippy.db.entity.join.EventAnswerWithUserAndDates" extends="BaseResultMap">
+        <association property="user" resultMap="BaseUserResultMap" columnPrefix="user_"></association>
+        <collection property="dates" ofType="dev.abelab.rippy.db.entity.EventAnswerDate" resultMap="BaseEventAnswerDateResultMap" columnPrefix="d_"></collection>
+    </resultMap>
+
+    <select id="selectWithUserByEventId" parameterType="java.lang.Integer" resultMap="EventAnswerWithUserResultMap">
+        select
+
+        ea.*,
+
+        user.id as user_id,
+        user.email as user_email,
+        user.password as user_password,
+        user.first_name as user_first_name,
+        user.last_name as user_last_name,
+        user.admission_year as user_admission_year,
+        user.role_id as user_role_id,
+        user.created_at as user_created_at,
+        user.updated_at as user_updated_at
+
+        from event_answer ea
+        left join user on ea.user_id = user.id
+        where ea.id = #{eventId}
+    </select>
+
+    <select id="selectWithDatesByEventId" parameterType="java.lang.Integer" resultMap="EventAnswerWithDatesResultMap">
+        select
+
+        ea.*,
+
+        ed.answer_id as d_answer_id,
+        ed.date_id as d_date_id,
+        ed.is_possible as d_is_possible
+
+        from event_answer ea
+        left join event_answer_date ed on ea.id = ed.answer_id
+        where ea.id = #{eventId}
+    </select>
+
+    <select id="selectWithUserAndDatesByEventId" parameterType="java.lang.Integer" resultMap="EventAnswerWithUserAndDatesResultMap">
+        select
+
+        ea.*,
+
+        user.id as user_id,
+        user.email as user_email,
+        user.password as user_password,
+        user.first_name as user_first_name,
+        user.last_name as user_last_name,
+        user.admission_year as user_admission_year,
+        user.role_id as user_role_id,
+        user.created_at as user_created_at,
+        user.updated_at as user_updated_at,
+
+        ed.answer_id as d_answer_id,
+        ed.date_id as d_date_id,
+        ed.is_possible as d_is_possible
+
+        from event_answer ea
+        left join user on ea.user_id = user.id
+        left join event_answer_date ed on ea.id = ed.answer_id
+        where ea.id = #{eventId}
+    </select>
+
+</mapper>

@@ -25,15 +25,22 @@ import dev.abelab.rippy.api.controller.AbstractRestController_IT;
 import dev.abelab.rippy.db.entity.UserSample;
 import dev.abelab.rippy.db.entity.EventSample;
 import dev.abelab.rippy.db.entity.EventDateSample;
+import dev.abelab.rippy.db.entity.EventAnswerSample;
+import dev.abelab.rippy.db.entity.EventAnswerDateSample;
 import dev.abelab.rippy.enums.UserRoleEnum;
 import dev.abelab.rippy.model.EventDateModel;
+import dev.abelab.rippy.model.EventOwnerModel;
+import dev.abelab.rippy.model.EventMemberModel;
 import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.repository.EventRepository;
 import dev.abelab.rippy.repository.EventDateRepository;
+import dev.abelab.rippy.repository.EventAnswerRepository;
+import dev.abelab.rippy.repository.EventAnswerDateRepository;
 import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.request.EventUpdateRequest;
 import dev.abelab.rippy.api.response.EventResponse;
 import dev.abelab.rippy.api.response.EventsResponse;
+import dev.abelab.rippy.api.response.EventDetailResponse;
 import dev.abelab.rippy.util.DateTimeUtil;
 import dev.abelab.rippy.exception.ErrorCode;
 import dev.abelab.rippy.exception.BaseException;
@@ -50,6 +57,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 	// API PATH
 	static final String BASE_PATH = "/api/events";
 	static final String GET_EVENTS_PATH = BASE_PATH;
+	static final String GET_EVENT_PATH = BASE_PATH + "/%s";
 	static final String CREATE_EVENT_PATH = BASE_PATH;
 	static final String UPDATE_EVENT_PATH = BASE_PATH + "/%s";
 	static final String DELETE_EVENT_PATH = BASE_PATH + "/%s";
@@ -65,6 +73,12 @@ public class EventRestController_IT extends AbstractRestController_IT {
 
 	@Autowired
 	EventDateRepository eventDateRepository;
+
+	@Autowired
+	EventAnswerRepository eventAnswerRepository;
+
+	@Autowired
+	EventAnswerDateRepository eventAnswerDateRepository;
 
 	/**
 	 * イベント一覧取得APIのテスト
@@ -643,6 +657,102 @@ public class EventRestController_IT extends AbstractRestController_IT {
 		void 異_無効な認証ヘッダ() throws Exception {
 			// test
 			final var request = deleteRequest(String.format(DELETE_EVENT_PATH, SAMPLE_INT));
+			request.header(HttpHeaders.AUTHORIZATION, "");
+			execute(request, new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN));
+		}
+
+	}
+
+	/**
+	 * イベント詳細取得APIのテスト
+	 */
+	@Nested
+	@TestInstance(PER_CLASS)
+	class GetEventTest extends AbstractRestControllerInitialization_IT {
+
+		@ParameterizedTest
+		@MethodSource
+		void 正_イベント詳細を取得(final UserRoleEnum roleId) throws Exception {
+			// setup
+			final var loginUser = createLoginUser(roleId);
+			final var credentials = getLoginUserCredentials(loginUser);
+
+			final var event = EventSample.builder().ownerId(loginUser.getId()).build();
+			eventRepository.insert(event);
+
+			// 候補日リスト
+			final var eventDates = Arrays.asList( //
+				EventDateSample.builder().eventId(event.getId()).dateOrder(1).build(), //
+				EventDateSample.builder().eventId(event.getId()).dateOrder(2).build(), //
+				EventDateSample.builder().eventId(event.getId()).dateOrder(3).build() //
+			);
+			eventDateRepository.bulkInsert(eventDates);
+
+			// 回答リスト
+			final var eventAnswers = Arrays.asList( //
+				EventAnswerSample.builder().userId(loginUser.getId()).eventId(event.getId()).build() //
+			);
+			eventAnswers.stream().forEach(eventAnswerRepository::insert);
+
+			// 候補日回答リスト
+			final var eventAnswerDates = Arrays.asList( //
+				EventAnswerDateSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(0).getId()).isPossible(true)
+					.build(), //
+				EventAnswerDateSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(1).getId()).isPossible(true)
+					.build(), //
+				EventAnswerDateSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(2).getId()).isPossible(false)
+					.build() //
+			);
+			eventAnswerDates.stream().forEach(eventAnswerDateRepository::insert);
+
+			// test
+			final var request = getRequest(String.format(GET_EVENT_PATH, event.getId()));
+			request.header(HttpHeaders.AUTHORIZATION, credentials);
+			final var response = execute(request, HttpStatus.OK, EventDetailResponse.class);
+
+			// verify
+			assertThat(response.getOwner()) //
+				.extracting(EventOwnerModel::getFirstName, EventOwnerModel::getLastName) //
+				.contains(loginUser.getFirstName(), loginUser.getLastName());
+			assertThat(response.getDates().size()).isEqualTo(eventDates.size());
+			assertThat(response.getMembers().size()).isEqualTo(1);
+			assertThat(response.getMembers()) //
+				.extracting(EventMemberModel::getId, EventMemberModel::getFirstName, EventMemberModel::getLastName,
+					EventMemberModel::getAdmissionYear) //
+				.containsExactly( //
+					tuple(loginUser.getId(), loginUser.getFirstName(), loginUser.getLastName(), loginUser.getAdmissionYear()) //
+				);
+			assertThat(response.getMembers().get(0).getAvailableDates().size()).isEqualTo(2);
+			assertThat(response.getMembers().get(0).getAvailableDates()) //
+				.extracting(EventDateModel::getDateOrder) //
+				.containsExactlyInAnyOrder(1, 2);
+		}
+
+		Stream<Arguments> 正_イベント詳細を取得() {
+			return Stream.of( //
+				// 管理者
+				arguments(UserRoleEnum.ADMIN), //
+				// メンバー
+				arguments(UserRoleEnum.MEMBER) //
+			);
+		}
+
+		@Test
+		void 異_取得対象イベントが存在しない() throws Exception {
+			// setup
+			final var loginUser = createLoginUser(UserRoleEnum.MEMBER);
+			final var credentials = getLoginUserCredentials(loginUser);
+
+			// test
+			final var request = getRequest(String.format(GET_EVENT_PATH, SAMPLE_INT));
+			request.header(HttpHeaders.AUTHORIZATION, credentials);
+			execute(request, new NotFoundException(ErrorCode.NOT_FOUND_EVENT));
+		}
+
+		@Test
+		void 異_無効な認証ヘッダ() throws Exception {
+			// test
+			final var request = getRequest(String.format(GET_EVENT_PATH, SAMPLE_INT));
 			request.header(HttpHeaders.AUTHORIZATION, "");
 			execute(request, new UnauthorizedException(ErrorCode.INVALID_ACCESS_TOKEN));
 		}
