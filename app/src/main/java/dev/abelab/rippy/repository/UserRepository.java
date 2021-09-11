@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import lombok.RequiredArgsConstructor;
 import dev.abelab.rippy.db.entity.User;
 import dev.abelab.rippy.db.entity.UserExample;
+import dev.abelab.rippy.db.entity.join.UserWithDates;
 import dev.abelab.rippy.db.mapper.UserMapper;
 import dev.abelab.rippy.exception.ErrorCode;
 import dev.abelab.rippy.exception.ConflictException;
@@ -20,9 +21,9 @@ public class UserRepository {
     private final UserMapper userMapper;
 
     /**
-     * ユーザ一覧を取得
+     * ユーザリストを取得
      *
-     * @return ユーザ一覧
+     * @return ユーザリスト
      */
     public List<User> selectAll() {
         final var userExample = new UserExample();
@@ -123,6 +124,17 @@ public class UserRepository {
         } catch (NotFoundException e) {
             return false;
         }
+    }
+
+    /**
+     * イベントIDからユーザ（+候補日リスト）リストを取得
+     *
+     * @param eventId イベントID
+     *
+     * @return ユーザ（+候補日リスト）リストを取得
+     */
+    public List<UserWithDates> selectWithDatesByEventId(final int eventId) {
+        return this.userMapper.selectWithDatesByEventId(eventId);
     }
 
 }
