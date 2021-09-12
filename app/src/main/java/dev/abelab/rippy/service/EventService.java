@@ -1,6 +1,5 @@
 package dev.abelab.rippy.service;
 
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -22,8 +21,6 @@ import dev.abelab.rippy.api.response.EventDetailResponse;
 import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.repository.EventRepository;
 import dev.abelab.rippy.repository.EventDateRepository;
-import dev.abelab.rippy.repository.EventAnswerRepository;
-import dev.abelab.rippy.repository.EventAnswerDateRepository;
 import dev.abelab.rippy.util.EventUtil;
 import dev.abelab.rippy.util.EventDateUtil;
 
@@ -39,10 +36,6 @@ public class EventService {
 
     private final EventDateRepository eventDateRepository;
 
-    private final EventAnswerRepository eventAnswerRepository;
-
-    private final EventAnswerDateRepository eventAnswerDateRepository;
-
     /**
      * イベント一覧を取得
      *
@@ -53,7 +46,7 @@ public class EventService {
     @Transactional
     public EventsResponse getEvents(final User loginUser) {
         // イベント一覧の取得
-        final var events = this.eventRepository.selectAllWithDates();
+        final var events = this.eventRepository.selectAll();
         final var eventResponses = events.stream() //
             .map(event -> this.modelMapper.map(event, EventResponse.class)) //
             .collect(Collectors.toList());
@@ -187,7 +180,7 @@ public class EventService {
                 // 参加可能日のみ抽出
                 eventMemberModel.setAvailableDates( //
                     member.getDates().stream() //
-                        .filter(date -> date.getAnswer().getIsPossible()) //
+                        .filter(date -> !date.getAnswer().getIsPossible()) //
                         .map(date -> this.modelMapper.map(date, EventDateModel.class)) //
                         .collect(Collectors.toList()) //
                 );

@@ -26,7 +26,7 @@ import dev.abelab.rippy.db.entity.UserSample;
 import dev.abelab.rippy.db.entity.EventSample;
 import dev.abelab.rippy.db.entity.EventDateSample;
 import dev.abelab.rippy.db.entity.EventAnswerSample;
-import dev.abelab.rippy.db.entity.EventAnswerDateSample;
+import dev.abelab.rippy.db.entity.EventDateAnswerSample;
 import dev.abelab.rippy.enums.UserRoleEnum;
 import dev.abelab.rippy.model.EventDateModel;
 import dev.abelab.rippy.model.EventOwnerModel;
@@ -35,7 +35,7 @@ import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.repository.EventRepository;
 import dev.abelab.rippy.repository.EventDateRepository;
 import dev.abelab.rippy.repository.EventAnswerRepository;
-import dev.abelab.rippy.repository.EventAnswerDateRepository;
+import dev.abelab.rippy.repository.EventDateAnswerRepository;
 import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.request.EventUpdateRequest;
 import dev.abelab.rippy.api.response.EventResponse;
@@ -78,7 +78,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 	EventAnswerRepository eventAnswerRepository;
 
 	@Autowired
-	EventAnswerDateRepository eventAnswerDateRepository;
+	EventDateAnswerRepository eventDateAnswerRepository;
 
 	/**
 	 * イベント一覧取得APIのテスト
@@ -121,12 +121,10 @@ public class EventRestController_IT extends AbstractRestController_IT {
 			// verify
 			assertThat(response.getEvents().size()).isEqualTo(events.size());
 			assertThat(response.getEvents()) //
-				.extracting(EventResponse::getId, EventResponse::getName, EventResponse::getDescription, EventResponse::getOwnerId) //
+				.extracting(EventResponse::getId, EventResponse::getName, EventResponse::getDescription) //
 				.containsExactlyInAnyOrderElementsOf(
-					events.stream().map(event -> tuple(event.getId(), event.getName(), event.getDescription(), event.getOwnerId()))
+					events.stream().map(event -> tuple(event.getId(), event.getName(), event.getDescription())) //
 						.collect(Collectors.toList()));
-			assertThat(response.getEvents().get(0).getDates().size()).isEqualTo(eventDates1.size());
-			assertThat(response.getEvents().get(1).getDates().size()).isEqualTo(eventDates2.size());
 		}
 
 		Stream<Arguments> 正_イベント一覧を取得() {
@@ -688,22 +686,36 @@ public class EventRestController_IT extends AbstractRestController_IT {
 			);
 			eventDateRepository.bulkInsert(eventDates);
 
+			// 回答者リスト
+			final var members = Arrays.asList( //
+				UserSample.builder().email("USER1_EMAIL").build(), //
+				UserSample.builder().email("USER2_EMAIL").build() //
+			);
+			members.stream().forEach(userRepository::insert);
+
 			// 回答リスト
 			final var eventAnswers = Arrays.asList( //
-				EventAnswerSample.builder().userId(loginUser.getId()).eventId(event.getId()).build() //
+				EventAnswerSample.builder().userId(members.get(0).getId()).eventId(event.getId()).build(), //
+				EventAnswerSample.builder().userId(members.get(1).getId()).eventId(event.getId()).build() //
 			);
 			eventAnswers.stream().forEach(eventAnswerRepository::insert);
 
 			// 候補日回答リスト
-			final var eventAnswerDates = Arrays.asList( //
-				EventAnswerDateSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(0).getId()).isPossible(true)
+			final var eventDateAnswers = Arrays.asList( //
+				EventDateAnswerSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(0).getId()).isPossible(true)
 					.build(), //
-				EventAnswerDateSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(1).getId()).isPossible(true)
+				EventDateAnswerSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(1).getId()).isPossible(true)
 					.build(), //
-				EventAnswerDateSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(2).getId()).isPossible(false)
+				EventDateAnswerSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(2).getId()).isPossible(false)
+					.build(), //
+				EventDateAnswerSample.builder().answerId(eventAnswers.get(1).getId()).dateId(eventDates.get(0).getId()).isPossible(false)
+					.build(), //
+				EventDateAnswerSample.builder().answerId(eventAnswers.get(1).getId()).dateId(eventDates.get(1).getId()).isPossible(false)
+					.build(), //
+				EventDateAnswerSample.builder().answerId(eventAnswers.get(1).getId()).dateId(eventDates.get(2).getId()).isPossible(true)
 					.build() //
 			);
-			eventAnswerDates.stream().forEach(eventAnswerDateRepository::insert);
+			eventDateAnswers.stream().forEach(eventDateAnswerRepository::insert);
 
 			// test
 			final var request = getRequest(String.format(GET_EVENT_PATH, event.getId()));
@@ -711,21 +723,27 @@ public class EventRestController_IT extends AbstractRestController_IT {
 			final var response = execute(request, HttpStatus.OK, EventDetailResponse.class);
 
 			// verify
+			assertThat(response) //
+				.extracting(EventDetailResponse::getId, EventDetailResponse::getName, EventDetailResponse::getDescription) //
+				.contains(event.getId(), event.getName(), event.getDescription());
 			assertThat(response.getOwner()) //
 				.extracting(EventOwnerModel::getFirstName, EventOwnerModel::getLastName) //
 				.contains(loginUser.getFirstName(), loginUser.getLastName());
 			assertThat(response.getDates().size()).isEqualTo(eventDates.size());
-			assertThat(response.getMembers().size()).isEqualTo(1);
+			assertThat(response.getMembers().size()).isEqualTo(members.size());
+
 			assertThat(response.getMembers()) //
 				.extracting(EventMemberModel::getId, EventMemberModel::getFirstName, EventMemberModel::getLastName,
 					EventMemberModel::getAdmissionYear) //
-				.containsExactly( //
-					tuple(loginUser.getId(), loginUser.getFirstName(), loginUser.getLastName(), loginUser.getAdmissionYear()) //
-				);
-			assertThat(response.getMembers().get(0).getAvailableDates().size()).isEqualTo(2);
-			assertThat(response.getMembers().get(0).getAvailableDates()) //
-				.extracting(EventDateModel::getDateOrder) //
-				.containsExactlyInAnyOrder(1, 2);
+				.containsExactlyInAnyOrderElementsOf( //
+					members.stream()
+						.map(member -> tuple(member.getId(), member.getFirstName(), member.getLastName(), member.getAdmissionYear()))
+						.collect(Collectors.toList()));
+
+			assertThat(response.getMembers().get(0).getAvailableDates().stream() //
+				.map(EventDateModel::getDateOrder).collect(Collectors.toList())).isEqualTo(Arrays.asList(1, 2));
+			assertThat(response.getMembers().get(1).getAvailableDates().stream() //
+				.map(EventDateModel::getDateOrder).collect(Collectors.toList())).isEqualTo(Arrays.asList(3));
 		}
 
 		Stream<Arguments> 正_イベント詳細を取得() {

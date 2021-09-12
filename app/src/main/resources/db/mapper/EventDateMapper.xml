@@ -4,7 +4,7 @@
     <resultMap id="BaseResultMap" type="dev.abelab.rippy.db.entity.EventDate" extends="dev.abelab.rippy.db.mapper.base.EventDateBaseMapper.BaseResultMap"></resultMap>
 
     <insert id="bulkInsert" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
-        insert into event_date(event_id, date_order, start_at, finish_at) values
+        INSERT INTO event_date(event_id, date_order, start_at, finish_at) VALUES
         <foreach collection="list" item="item" separator=",">
             (#{item.eventId}, #{item.dateOrder}, #{item.startAt}, #{item.finishAt})
         </foreach>
