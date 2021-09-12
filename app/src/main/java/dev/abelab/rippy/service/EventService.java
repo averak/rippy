@@ -180,7 +180,7 @@ public class EventService {
                 // 参加可能日のみ抽出
                 eventMemberModel.setAvailableDates( //
                     member.getDates().stream() //
-                        .filter(date -> date.getAnswer().getIsPossible()) //
+                        .filter(date -> !date.getAnswer().getIsPossible()) //
                         .map(date -> this.modelMapper.map(date, EventDateModel.class)) //
                         .collect(Collectors.toList()) //
                 );

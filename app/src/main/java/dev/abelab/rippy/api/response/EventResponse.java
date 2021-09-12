@@ -29,11 +29,6 @@ public class EventResponse {
     String description;
 
     /**
-     * イベントオーナーID
-     */
-    Integer ownerId;
-
-    /**
      * イベント募集締め切り
      */
     Date expiredAt;

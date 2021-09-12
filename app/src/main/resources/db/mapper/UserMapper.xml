@@ -27,9 +27,11 @@
         event_date_answer.date_id AS event_date__answer__date_id,
         event_date_answer.is_possible AS event_date__answer__is_possible
 
-        FROM user, event_date
-        LEFT JOIN event_date_answer ON event_date.id = event_date_answer.date_id
-        WHERE event_date.event_id = #{event_id}
+        FROM user
+        CROSS JOIN event_date
+        LEFT JOIN event_answer ON user.id = event_answer.user_id
+        LEFT JOIN event_date_answer ON event_date.id = event_date_answer.date_id AND event_answer.id = event_date_answer.answer_id
+        WHERE event_answer.event_id = #{event_id}
     </select>
 
 </mapper>
