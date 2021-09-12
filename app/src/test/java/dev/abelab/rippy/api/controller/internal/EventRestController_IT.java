@@ -125,8 +125,6 @@ public class EventRestController_IT extends AbstractRestController_IT {
 				.containsExactlyInAnyOrderElementsOf(
 					events.stream().map(event -> tuple(event.getId(), event.getName(), event.getDescription(), event.getOwnerId()))
 						.collect(Collectors.toList()));
-			assertThat(response.getEvents().get(0).getDates().size()).isEqualTo(eventDates1.size());
-			assertThat(response.getEvents().get(1).getDates().size()).isEqualTo(eventDates2.size());
 		}
 
 		Stream<Arguments> 正_イベント一覧を取得() {

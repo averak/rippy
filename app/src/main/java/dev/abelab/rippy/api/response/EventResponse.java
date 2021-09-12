@@ -1,10 +1,8 @@
 package dev.abelab.rippy.api.response;
 
 import java.util.Date;
-import java.util.List;
 
 import lombok.*;
-import dev.abelab.rippy.model.EventDateModel;
 
 /**
  * イベント情報レスポンス
@@ -39,10 +37,5 @@ public class EventResponse {
      * イベント募集締め切り
      */
     Date expiredAt;
-
-    /**
-     * イベント候補日リスト
-     */
-    List<EventDateModel> dates;
 
 }
