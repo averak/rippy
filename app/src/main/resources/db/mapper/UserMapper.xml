@@ -3,33 +3,33 @@
 <mapper namespace="dev.abelab.rippy.db.mapper.UserMapper">
     <resultMap id="BaseResultMap" type="dev.abelab.rippy.db.entity.User" extends="dev.abelab.rippy.db.mapper.base.UserBaseMapper.BaseResultMap"></resultMap>
     <resultMap id="BaseEventDateResultMap" type="dev.abelab.rippy.db.entity.EventDate" extends="dev.abelab.rippy.db.mapper.base.EventDateBaseMapper.BaseResultMap"></resultMap>
-    <resultMap id="BaseEventAnswerDateResultMap" type="dev.abelab.rippy.db.entity.EventAnswerDate" extends="dev.abelab.rippy.db.mapper.base.EventAnswerDateBaseMapper.BaseResultMap"></resultMap>
+    <resultMap id="BaseEventDateAnswerResultMap" type="dev.abelab.rippy.db.entity.EventDateAnswer" extends="dev.abelab.rippy.db.mapper.base.EventDateAnswerBaseMapper.BaseResultMap"></resultMap>
 
     <resultMap id="EventDateWithAnswerResultMap" type="dev.abelab.rippy.db.entity.join.EventDateWithAnswer" extends="BaseEventDateResultMap">
-        <association property="answer" resultMap="BaseEventAnswerDateResultMap" columnPrefix="ead_"></association>
+        <association property="answer" resultMap="BaseEventDateAnswerResultMap" columnPrefix="answer__"></association>
     </resultMap>
     <resultMap id="UserWithDatesResultMap" type="dev.abelab.rippy.db.entity.join.UserWithDates" extends="BaseResultMap">
-        <collection property="dates" ofType="dev.abelab.rippy.db.entity.join.EventDateWithAnswer" resultMap="EventDateWithAnswerResultMap" columnPrefix="ed_"></collection>
+        <collection property="dates" ofType="dev.abelab.rippy.db.entity.join.EventDateWithAnswer" resultMap="EventDateWithAnswerResultMap" columnPrefix="event_date__"></collection>
     </resultMap>
 
     <select id="selectWithDatesByEventId" parameterType="java.lang.Integer" resultMap="UserWithDatesResultMap">
-        select
+        SELECT
 
         user.*,
 
-        ed.id as ed_id,
-        ed.event_id as ed_event_id,
-        ed.date_order as ed_date_order,
-        ed.start_at as ed_start_at,
-        ed.finish_at as ed_finish_at,
+        event_date.id AS event_date__id,
+        event_date.event_id AS event_date__event_id,
+        event_date.date_order AS event_date__date_order,
+        event_date.start_at AS event_date__start_at,
+        event_date.finish_at AS event_date__finish_at,
 
-        ead.answer_id as ed_ead_answer_id,
-        ead.date_id as ed_ead_date_id,
-        ead.is_possible as ed_ead_is_possible
+        event_date_answer.answer_id AS event_date__answer__answer_id,
+        event_date_answer.date_id AS event_date__answer__date_id,
+        event_date_answer.is_possible AS event_date__answer__is_possible
 
-        from user
-        left join event_date ed on ed.event_id = #{event_id}
-        left join event_answer_date ead on ed.id = ead.date_id
+        FROM user, event_date
+        LEFT JOIN event_date_answer ON event_date.id = event_date_answer.date_id
+        WHERE event_date.event_id = #{event_id}
     </select>
 
 </mapper>

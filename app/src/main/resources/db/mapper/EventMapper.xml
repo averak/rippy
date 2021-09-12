@@ -5,38 +5,38 @@
     <resultMap id="BaseEventDateResultMap" type="dev.abelab.rippy.db.entity.EventDate" extends="dev.abelab.rippy.db.mapper.base.EventDateBaseMapper.BaseResultMap"></resultMap>
 
     <resultMap id="EventWithDatesResultMap" type="dev.abelab.rippy.db.entity.join.EventWithDates" extends="BaseResultMap">
-        <collection property="dates" ofType="dev.abelab.rippy.db.entity.EventDate" resultMap="BaseEventDateResultMap" columnPrefix="d_"></collection>
+        <collection property="dates" ofType="dev.abelab.rippy.db.entity.EventDate" resultMap="BaseEventDateResultMap" columnPrefix="event_date__"></collection>
     </resultMap>
 
     <select id="selectAllWithDates" resultMap="EventWithDatesResultMap">
-        select
+        SELECT
 
-        e.*,
+        event.*,
 
-        ed.id as d_id,
-        ed.event_id as d_event_id,
-        ed.date_order as d_date_order,
-        ed.start_at as d_start_at,
-        ed.finish_at as d_finish_at
+        event_date.id AS event_date__id,
+        event_date.event_id AS event_date__event_id,
+        event_date.date_order AS event_date__date_order,
+        event_date.start_at AS event_date__start_at,
+        event_date.finish_at AS event_date__finish_at
 
-        from event e
-        left join event_date ed on e.id = ed.event_id
+        FROM event event
+        LEFT JOIN event_date event_date ON event.id = event_date.event_id
     </select>
 
     <select id="selectWithDatesById" parameterType="java.lang.Integer" resultMap="EventWithDatesResultMap">
-        select
+        SELECT
 
-        e.*,
+        event.*,
 
-        ed.id as d_id,
-        ed.event_id as d_event_id,
-        ed.date_order as d_date_order,
-        ed.start_at as d_start_at,
-        ed.finish_at as d_finish_at
+        event_date.id AS event_date__id,
+        event_date.event_id AS event_date__event_id,
+        event_date.date_order AS event_date__date_order,
+        event_date.start_at AS event_date__start_at,
+        event_date.finish_at AS event_date__finish_at
 
-        from event e
-        left join event_date ed on e.id = ed.event_id
-        where e.id = #{id}
+        FROM event event
+        LEFT JOIN event_date event_date ON event.id = event_date.event_id
+        WHERE event.id = #{id}
     </select>
 
 </mapper>

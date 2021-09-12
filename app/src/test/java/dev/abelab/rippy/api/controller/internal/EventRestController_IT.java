@@ -26,7 +26,7 @@ import dev.abelab.rippy.db.entity.UserSample;
 import dev.abelab.rippy.db.entity.EventSample;
 import dev.abelab.rippy.db.entity.EventDateSample;
 import dev.abelab.rippy.db.entity.EventAnswerSample;
-import dev.abelab.rippy.db.entity.EventAnswerDateSample;
+import dev.abelab.rippy.db.entity.EventDateAnswerSample;
 import dev.abelab.rippy.enums.UserRoleEnum;
 import dev.abelab.rippy.model.EventDateModel;
 import dev.abelab.rippy.model.EventOwnerModel;
@@ -35,7 +35,7 @@ import dev.abelab.rippy.repository.UserRepository;
 import dev.abelab.rippy.repository.EventRepository;
 import dev.abelab.rippy.repository.EventDateRepository;
 import dev.abelab.rippy.repository.EventAnswerRepository;
-import dev.abelab.rippy.repository.EventAnswerDateRepository;
+import dev.abelab.rippy.repository.EventDateAnswerRepository;
 import dev.abelab.rippy.api.request.EventCreateRequest;
 import dev.abelab.rippy.api.request.EventUpdateRequest;
 import dev.abelab.rippy.api.response.EventResponse;
@@ -78,7 +78,7 @@ public class EventRestController_IT extends AbstractRestController_IT {
 	EventAnswerRepository eventAnswerRepository;
 
 	@Autowired
-	EventAnswerDateRepository eventAnswerDateRepository;
+	EventDateAnswerRepository eventDateAnswerRepository;
 
 	/**
 	 * イベント一覧取得APIのテスト
@@ -693,15 +693,15 @@ public class EventRestController_IT extends AbstractRestController_IT {
 			eventAnswers.stream().forEach(eventAnswerRepository::insert);
 
 			// 候補日回答リスト
-			final var eventAnswerDates = Arrays.asList( //
-				EventAnswerDateSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(0).getId()).isPossible(true)
+			final var eventDateAnswers = Arrays.asList( //
+				EventDateAnswerSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(0).getId()).isPossible(true)
 					.build(), //
-				EventAnswerDateSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(1).getId()).isPossible(true)
+				EventDateAnswerSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(1).getId()).isPossible(true)
 					.build(), //
-				EventAnswerDateSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(2).getId()).isPossible(false)
+				EventDateAnswerSample.builder().answerId(eventAnswers.get(0).getId()).dateId(eventDates.get(2).getId()).isPossible(false)
 					.build() //
 			);
-			eventAnswerDates.stream().forEach(eventAnswerDateRepository::insert);
+			eventDateAnswers.stream().forEach(eventDateAnswerRepository::insert);
 
 			// test
 			final var request = getRequest(String.format(GET_EVENT_PATH, event.getId()));

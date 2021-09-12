@@ -2,7 +2,7 @@ package dev.abelab.rippy.db.entity.join;
 
 import lombok.*;
 import dev.abelab.rippy.db.entity.EventDate;
-import dev.abelab.rippy.db.entity.EventAnswerDate;
+import dev.abelab.rippy.db.entity.EventDateAnswer;
 
 /**
  * イベント候補日 + 回答
@@ -15,6 +15,6 @@ public class EventDateWithAnswer extends EventDate {
     /**
      * 回答
      */
-    EventAnswerDate answer;
+    EventDateAnswer answer;
 
 }
