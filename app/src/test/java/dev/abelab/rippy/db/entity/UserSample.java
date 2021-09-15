@@ -44,7 +44,7 @@ public class UserSample extends AbstractSample {
         }
 
         public UserSampleBuilder lastName(String lastName) {
-            this.firstName = lastName;
+            this.lastName = lastName;
             return this;
         }
 
@@ -70,16 +70,16 @@ public class UserSample extends AbstractSample {
 
         public User build() {
             return User.builder() //
-                .id(this.id) //
-                .email(this.email) //
-                .password(this.password) //
-                .firstName(this.firstName) //
-                .lastName(this.lastName) //
-                .admissionYear(this.admissionYear) //
-                .roleId(this.roleId) //
-                .createdAt(this.createdAt) //
-                .updatedAt(this.updatedAt) //
-                .build();
+                    .id(this.id) //
+                    .email(this.email) //
+                    .password(this.password) //
+                    .firstName(this.firstName) //
+                    .lastName(this.lastName) //
+                    .admissionYear(this.admissionYear) //
+                    .roleId(this.roleId) //
+                    .createdAt(this.createdAt) //
+                    .updatedAt(this.updatedAt) //
+                    .build();
         }
 
     }
